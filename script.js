@@ -931,3 +931,244 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Enhanced version
 if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+/* ════════════════════════════════════════════
+   URL DOWNLOADER
+════════════════════════════════════════════ */
+
+let currentUrlData = null;
+let urlHistory = JSON.parse(localStorage.getItem('convrt_url_history') || '[]');
+
+const IMAGE_EXTS = ['jpg','jpeg','png','gif','webp','bmp','svg','avif','tiff','ico'];
+const VIDEO_EXTS = ['mp4','webm','mov','avi','mkv','m4v','ogv','flv'];
+
+function detectType(url) {
+  const clean = url.split('?')[0].toLowerCase();
+  const ext = clean.split('.').pop();
+  if (IMAGE_EXTS.includes(ext)) return { type: 'image', ext };
+  if (VIDEO_EXTS.includes(ext)) return { type: 'video', ext };
+  // Intentar por headers o URL hints
+  if (url.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg|avif)/i)) return { type: 'image', ext: 'jpg' };
+  if (url.match(/\.(mp4|webm|mov|avi|mkv|m4v)/i)) return { type: 'video', ext: 'mp4' };
+  return { type: 'unknown', ext: '' };
+}
+
+function getFilenameFromUrl(url) {
+  try {
+    const parts = new URL(url).pathname.split('/');
+    const name = parts[parts.length - 1];
+    return name || 'descarga';
+  } catch {
+    return 'descarga';
+  }
+}
+
+function formatBytes(bytes) {
+  if (!bytes) return '—';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+function urlInputChanged() {
+  document.getElementById('url-preview-box').classList.remove('visible');
+  document.getElementById('url-cors-notice').classList.remove('visible');
+  document.getElementById('url-dl-status').textContent = '';
+  currentUrlData = null;
+}
+
+async function fetchUrl() {
+  const input = document.getElementById('url-input');
+  const url = input.value.trim();
+  if (!url) return;
+
+  const fetchBtn = document.getElementById('url-fetch-btn');
+  const previewBox = document.getElementById('url-preview-box');
+  const corsNotice = document.getElementById('url-cors-notice');
+  const metaEl = document.getElementById('url-meta');
+  const mediaWrap = document.getElementById('url-media-wrap');
+  const dlStatus = document.getElementById('url-dl-status');
+
+  // Reset
+  previewBox.classList.remove('visible');
+  corsNotice.classList.remove('visible');
+  mediaWrap.innerHTML = '';
+  metaEl.innerHTML = '';
+  dlStatus.textContent = '';
+  currentUrlData = null;
+
+  fetchBtn.disabled = true;
+  fetchBtn.textContent = 'Cargando...';
+
+  const { type, ext } = detectType(url);
+  const filename = getFilenameFromUrl(url);
+
+  try {
+    const response = await fetch(url, { mode: 'cors' });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    const detectedType = blob.type || '';
+    const isImage = detectedType.startsWith('image/') || type === 'image';
+    const isVideo = detectedType.startsWith('video/') || type === 'video';
+    const finalType = isImage ? 'image' : isVideo ? 'video' : type;
+
+    currentUrlData = { blob, objectUrl, filename, type: finalType, size: blob.size, mime: detectedType };
+
+    // Meta info
+    metaEl.innerHTML = `
+      <div class="url-meta-row">
+        <span class="url-meta-label">Tipo</span>
+        <span class="url-type-badge ${finalType}">${finalType === 'image' ? '🖼 Imagen' : finalType === 'video' ? '🎬 Video' : '❓ Desconocido'}</span>
+      </div>
+      <div class="url-meta-row">
+        <span class="url-meta-label">Tamaño</span>
+        <span class="url-meta-value">${formatBytes(blob.size)}</span>
+      </div>
+      <div class="url-meta-row">
+        <span class="url-meta-label">Formato</span>
+        <span class="url-meta-value">${detectedType || ext || '—'}</span>
+      </div>
+      <div class="url-meta-row">
+        <span class="url-meta-label">Archivo</span>
+        <span class="url-meta-value">${filename}</span>
+      </div>
+    `;
+
+    // Preview
+    if (isImage) {
+      const img = document.createElement('img');
+      img.src = objectUrl;
+      img.className = 'url-preview-media';
+      img.alt = filename;
+      mediaWrap.appendChild(img);
+    } else if (isVideo) {
+      const video = document.createElement('video');
+      video.src = objectUrl;
+      video.className = 'url-preview-media';
+      video.controls = true;
+      mediaWrap.appendChild(video);
+    }
+
+    previewBox.classList.add('visible');
+
+    // Guardar en historial
+    addToHistory(url, finalType);
+
+  } catch (err) {
+    if (err.message.includes('Failed to fetch') || err.name === 'TypeError') {
+      corsNotice.classList.add('visible');
+
+      // Intentar carga como elemento (para preview aunque no se pueda descargar)
+      const { type: t } = detectType(url);
+      if (t === 'image') {
+        const img = document.createElement('img');
+        img.src = url;
+        img.className = 'url-preview-media';
+        img.alt = filename;
+        img.onload = () => {
+          metaEl.innerHTML = `
+            <div class="url-meta-row">
+              <span class="url-meta-label">Tipo</span>
+              <span class="url-type-badge image">🖼 Imagen</span>
+            </div>
+            <div class="url-meta-row">
+              <span class="url-meta-label">Archivo</span>
+              <span class="url-meta-value">${filename}</span>
+            </div>
+            <div class="url-meta-row" style="color:var(--warn)">
+              <span class="url-meta-label">Nota</span>
+              <span>Solo preview — descarga bloqueada por CORS</span>
+            </div>
+          `;
+          mediaWrap.appendChild(img);
+          previewBox.classList.add('visible');
+          currentUrlData = { url, filename, type: 'image', corsBlocked: true };
+        };
+        img.onerror = () => {
+          showToast('No se pudo cargar el recurso', 'error');
+        };
+      } else {
+        showToast('No se pudo acceder al recurso (CORS)', 'error');
+      }
+    } else {
+      showToast(`Error: ${err.message}`, 'error');
+    }
+  }
+
+  fetchBtn.disabled = false;
+  fetchBtn.textContent = 'Cargar →';
+}
+
+async function downloadFromUrl() {
+  if (!currentUrlData) return;
+  const dlBtn = document.getElementById('url-dl-btn');
+  const dlStatus = document.getElementById('url-dl-status');
+
+  if (currentUrlData.corsBlocked) {
+    // Intentar con anchor en nueva tab
+    const a = document.createElement('a');
+    a.href = currentUrlData.url;
+    a.download = currentUrlData.filename;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.click();
+    dlStatus.textContent = 'Abierto en nueva pestaña';
+    return;
+  }
+
+  dlBtn.textContent = 'Descargando...';
+  dlBtn.style.opacity = '0.6';
+
+  try {
+    const a = document.createElement('a');
+    a.href = currentUrlData.objectUrl;
+    a.download = currentUrlData.filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    dlStatus.textContent = `✓ ${formatBytes(currentUrlData.size)} descargados`;
+    dlStatus.style.color = 'var(--ok)';
+    showToast(`Descargado: ${currentUrlData.filename}`);
+  } catch (err) {
+    showToast('Error al descargar', 'error');
+    dlStatus.textContent = 'Error al descargar';
+    dlStatus.style.color = 'var(--hot)';
+  }
+
+  dlBtn.textContent = '↓ Descargar';
+  dlBtn.style.opacity = '1';
+}
+
+function addToHistory(url, type) {
+  urlHistory = urlHistory.filter(h => h.url !== url);
+  urlHistory.unshift({ url, type, ts: Date.now() });
+  if (urlHistory.length > 8) urlHistory = urlHistory.slice(0, 8);
+  try { localStorage.setItem('convrt_url_history', JSON.stringify(urlHistory)); } catch {}
+  renderHistory();
+}
+
+function renderHistory() {
+  const wrap = document.getElementById('url-history');
+  const list = document.getElementById('url-history-list');
+  if (!urlHistory.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'flex';
+  list.innerHTML = urlHistory.map(h => `
+    <div class="url-history-item" onclick="loadFromHistory('${h.url.replace(/'/g,"\\'")}')">
+      <span class="hist-type">${h.type === 'image' ? '🖼' : h.type === 'video' ? '🎬' : '🔗'}</span>
+      <span class="hist-url">${h.url}</span>
+    </div>
+  `).join('');
+}
+
+function loadFromHistory(url) {
+  document.getElementById('url-input').value = url;
+  fetchUrl();
+}
+
+// Renderizar historial al cargar el panel
+document.addEventListener('DOMContentLoaded', () => {
+  renderHistory();
+});
