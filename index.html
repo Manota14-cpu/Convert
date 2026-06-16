@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CONVRT — Convertidor de archivos</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<link rel="manifest" href="manifest.json"/>
+<style>
+/* ════════════════════════════════
+   CONVRT — Rediseño BWL / Base44
+   Font: Space Grotesk + Space Mono
+   Paleta: negro, naranja, cian, ok
+════════════════════════════════ */
+:root {
+  --black:    #080808;
+  --deep:     #0c0c0c;
+  --plate:    #111111;
+  --raised:   #161616;
+  --border:   #222222;
+  --mid:      #333333;
+  --dim:      #555555;
+  --muted:    #777777;
+  --light:    #cccccc;
+  --white:    #f2ede4;
+  --hot:      #ff5e1a;
+  --hot2:     #ff8c5a;
+  --hotglow:  rgba(255,94,26,0.15);
+  --cold:     #00d4ff;
+  --coldglow: rgba(0,212,255,0.1);
+  --ok:       #00ff88;
+  --okglow:   rgba(0,255,136,0.1);
+  --warn:     #ffcc00;
+  --purple:   #bb77ff;
+
+  --mono: 'Space Mono', monospace;
+  --sans: 'Space Grotesk', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Noise overlay */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0.4;
+}
+
+/* ════════════════
+   SCREENS
+════════════════ */
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* ════════════════════════════════
+   LANDING
+════════════════════════════════ */
+#screen-landing {
+  position: relative;
+  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+/* Fondo con gradientes posicionados */
+.landing-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 600px 500px at 10% 20%, rgba(255,94,26,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 500px 400px at 90% 80%, rgba(0,212,255,0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 400px 300px at 50% 110%, rgba(0,255,136,0.05) 0%, transparent 60%);
+  animation: bgPulse 10s ease-in-out infinite alternate;
+}
+@keyframes bgPulse {
+  from { opacity: 0.7; }
+  to   { opacity: 1; }
+}
+
+/* Grid de líneas */
+.landing-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,94,26,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,94,26,0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 0%, transparent 70%);
+}
+
+.landing-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  padding: 4rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Eyebrow mono */
+.landing-tag {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--hot);
+  letter-spacing: 0.05em;
+  margin-bottom: 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  animation: fadeUp 0.6s 0.1s both;
+}
+.landing-tag::before { content: '//'; opacity: 0.5; }
+.landing-tag::after {
+  content: '';
+  display: inline-block;
+  width: 32px; height: 1px;
+  background: var(--hot);
+  opacity: 0.4;
+}
+
+/* Título GIGANTE */
+.landing-title {
+  font-family: var(--sans);
+  font-size: clamp(5rem, 18vw, 13rem);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  margin-bottom: 0.5rem;
+  animation: titleReveal 0.9s 0.2s both;
+}
+.landing-title .accent { color: var(--hot); }
+.landing-title .sub {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.14em;
+  font-weight: 400;
+  color: var(--muted);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  margin-top: 1.2rem;
+}
+
+@keyframes titleReveal {
+  from { opacity: 0; transform: translateY(40px); filter: blur(8px); }
+  to   { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+.landing-desc {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--muted);
+  line-height: 1.8;
+  max-width: 480px;
+  margin: 2rem auto 2.5rem;
+  animation: fadeUp 0.6s 0.4s both;
+}
+
+/* Feature chips */
+.landing-features {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 3rem;
+}
+
+.feat-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--light);
+  background: var(--plate);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--hot);
+  padding: 0.5rem 0.9rem;
+  opacity: 0;
+  animation: chipIn 0.4s both;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+.feat-chip:hover { background: var(--raised); border-color: var(--mid); transform: translateY(-3px); }
+.feat-chip:nth-child(1) { animation-delay:0.5s; }
+.feat-chip:nth-child(2) { animation-delay:0.6s; border-top-color: var(--cold); }
+.feat-chip:nth-child(3) { animation-delay:0.7s; border-top-color: var(--ok); }
+.feat-chip:nth-child(4) { animation-delay:0.8s; border-top-color: var(--warn); }
+.feat-chip:nth-child(5) { animation-delay:0.9s; border-top-color: var(--purple); }
+
+@keyframes chipIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.feat-chip .dot {
+  width: 5px; height: 5px;
+  background: var(--hot);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.feat-chip:nth-child(2) .dot { background: var(--cold); }
+.feat-chip:nth-child(3) .dot { background: var(--ok); }
+.feat-chip:nth-child(4) .dot { background: var(--warn); }
+.feat-chip:nth-child(5) .dot { background: var(--purple); }
+
+/* CTA */
+.btn-enter {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.2rem;
+  font-family: var(--sans);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 1.1rem 2.8rem;
+  background: var(--hot);
+  color: #000;
+  border: none;
+  cursor: pointer;
+  clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  animation: fadeUp 0.6s 1s both;
+  position: relative;
+}
+.btn-enter:hover {
+  background: var(--hot2);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(255,94,26,0.35);
+}
+.btn-enter .arrow { font-size: 1.1rem; transition: transform 0.25s; }
+.btn-enter:hover .arrow { transform: translateX(5px); }
+
+.landing-note {
+  margin-top: 1.75rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--dim);
+  animation: fadeUp 0.6s 1.1s both;
+  letter-spacing: 0.05em;
+}
+.landing-note span { color: var(--ok); }
+
+/* ════════════════════════════════
+   APP SHELL
+════════════════════════════════ */
+#screen-app { min-height: 100vh; }
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  height: 60px;
+  border-bottom: 1px solid var(--border);
+  background: var(--deep);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-shrink: 0;
+}
+
+/* Línea de acento bajo header */
+header::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%; height: 1px;
+  background: linear-gradient(90deg, var(--hot) 0%, var(--cold) 40%, transparent 70%);
+}
+
+.logo {
+  font-family: var(--sans);
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  user-select: none;
+}
+.logo:hover { opacity: 0.6; }
+.logo span { color: var(--hot); }
+
+.header-nav { display: flex; gap: 0; }
+
+.nav-btn {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.5rem 1.1rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  height: 60px;
+  position: relative;
+}
+.nav-btn:hover { color: var(--light); }
+.nav-btn.active { color: var(--hot); border-bottom-color: var(--hot); }
+
+.status-dot {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--ok);
+  letter-spacing: 0.05em;
+}
+.status-dot::before {
+  content: '';
+  width: 6px; height: 6px;
+  background: var(--ok);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--ok);
+  animation: blink 2s ease-in-out infinite;
+}
+
+/* APP SUBPAGES */
+.app-page { display: none; flex: 1; }
+.app-page.active {
+  display: flex;
+  animation: pageIn 0.3s ease both;
+}
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ════════════════════════════════
+   CONVERTER LAYOUT
+════════════════════════════════ */
+#page-converter {
+  flex-direction: row;
+  min-height: calc(100vh - 60px);
+}
+
+/* SIDEBAR */
+aside {
+  width: 240px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  padding: 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--deep);
+}
+
+.sidebar-title {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--dim);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0 1.25rem 1rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.sidebar-title::before { content: '//'; color: var(--hot); opacity: 0.7; }
+
+.conv-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  background: none;
+  border: none;
+  border-left: 3px solid transparent;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  width: 100%;
+}
+.conv-btn:hover {
+  color: var(--light);
+  background: var(--plate);
+  border-left-color: var(--mid);
+}
+.conv-btn.active {
+  color: var(--white);
+  background: var(--plate);
+  border-left-color: var(--hot);
+}
+
+.conv-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+
+.conv-badge {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.06em;
+  padding: 0.15rem 0.4rem;
+  background: var(--raised);
+  border: 1px solid var(--border);
+  color: var(--dim);
+  margin-left: auto;
+  white-space: nowrap;
+  transition: color 0.2s, border-color 0.2s;
+}
+.conv-btn.active .conv-badge { color: var(--muted); border-color: var(--mid); }
+
+.content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ════════════════════════════════
+   PANEL
+════════════════════════════════ */
+.panel { display: none; flex-direction: column; flex: 1; }
+.panel.active {
+  display: flex;
+  animation: panelIn 0.25s ease both;
+}
+@keyframes panelIn {
+  from { opacity: 0; transform: translateX(10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.panel-header {
+  padding: 2rem 2rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  background: var(--deep);
+}
+
+.panel-title {
+  font-family: var(--sans);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.panel-title .arrow {
+  color: var(--hot);
+  font-weight: 300;
+  font-size: 0.7em;
+}
+.panel-subtitle {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-top: 0.5rem;
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.panel-subtitle::before { content: '>'; color: var(--hot); opacity: 0.7; }
+
+.format-pills { display: flex; gap: 0.3rem; flex-wrap: wrap; align-self: flex-end; }
+.pill {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  padding: 0.2rem 0.55rem;
+  background: var(--plate);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.pill.hi { background: var(--coldglow); border-color: rgba(0,212,255,0.3); color: var(--cold); }
+
+.panel-body {
+  padding: 2rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  overflow-y: auto;
+}
+
+/* ════════════════════════════════
+   FORMAT SELECTOR
+════════════════════════════════ */
+.format-selector { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+
+.format-label {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.format-options { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+
+.fmt-opt {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  padding: 0.4rem 1rem;
+  border: 1px solid var(--border);
+  background: var(--plate);
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.fmt-opt:hover { border-color: var(--mid); color: var(--light); }
+.fmt-opt.selected {
+  border-color: var(--hot);
+  background: var(--hotglow);
+  color: var(--hot);
+}
+
+/* ════════════════════════════════
+   DROP ZONE
+════════════════════════════════ */
+.drop-zone {
+  border: 1px dashed var(--border);
+  background: var(--plate);
+  padding: 3rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Corners decorativos */
+.drop-zone::before,
+.drop-zone::after {
+  content: '';
+  position: absolute;
+  width: 20px; height: 20px;
+  border-color: var(--hot);
+  border-style: solid;
+  opacity: 0.3;
+  transition: opacity 0.2s, width 0.2s, height 0.2s;
+}
+.drop-zone::before { top: 0; left: 0; border-width: 2px 0 0 2px; }
+.drop-zone::after  { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
+
+.drop-zone:hover::before,
+.drop-zone:hover::after,
+.drop-zone.dragover::before,
+.drop-zone.dragover::after { opacity: 0.8; width: 28px; height: 28px; }
+
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: var(--hot);
+  background: var(--hotglow);
+}
+.drop-zone input { display: none; }
+
+.drop-icon {
+  font-size: 1.8rem;
+  display: block;
+  margin-bottom: 0.75rem;
+  opacity: 0.25;
+  transition: opacity 0.2s, transform 0.25s;
+}
+.drop-zone:hover .drop-icon { opacity: 0.5; transform: translateY(-4px); }
+
+.drop-main {
+  font-family: var(--sans);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--light);
+  margin-bottom: 0.3rem;
+}
+.drop-sub {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+.drop-types {
+  display: inline-block;
+  margin-top: 1rem;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+  background: var(--raised);
+  border: 1px solid var(--border);
+  padding: 0.2rem 0.6rem;
+}
+
+/* ════════════════════════════════
+   FILE LIST
+════════════════════════════════ */
+.file-list { display: flex; flex-direction: column; gap: 0.3rem; }
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  background: var(--plate);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--cold);
+  animation: fileIn 0.25s ease both;
+  transition: border-color 0.15s, background 0.15s;
+}
+.file-item:hover { background: var(--raised); border-color: var(--mid); border-left-color: var(--hot); }
+
+@keyframes fileIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.file-ext {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 0.15rem 0.4rem;
+  background: var(--coldglow);
+  border: 1px solid rgba(0,212,255,0.25);
+  color: var(--cold);
+  min-width: 42px;
+  text-align: center;
+}
+.file-name { flex: 1; font-size: 0.82rem; color: var(--light); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-size { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); }
+.file-remove {
+  background: none; border: none; color: var(--dim);
+  cursor: pointer; font-size: 1rem; line-height: 1; padding: 0.1rem;
+  transition: color 0.15s, transform 0.18s;
+}
+.file-remove:hover { color: var(--hot); transform: rotate(90deg); }
+
+.file-status {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  min-width: 72px;
+  text-align: right;
+  transition: color 0.25s;
+}
+.file-status.pending    { color: var(--dim); }
+.file-status.converting { color: var(--cold); animation: pulse 1s ease-in-out infinite; }
+.file-status.done       { color: var(--ok); }
+.file-status.error      { color: var(--hot); }
+
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ════════════════════════════════
+   PROGRESS
+════════════════════════════════ */
+.progress-wrap { display: none; flex-direction: column; gap: 0.4rem; }
+.progress-wrap.visible { display: flex; animation: fadeUp 0.25s both; }
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+.progress-bar { height: 2px; background: var(--border); overflow: hidden; }
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--hot), var(--cold));
+  width: 0%;
+  transition: width 0.4s ease;
+  box-shadow: 0 0 8px var(--cold);
+}
+
+/* ════════════════════════════════
+   ACTION BAR
+════════════════════════════════ */
+.action-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+  flex-wrap: wrap;
+}
+
+.btn-convert {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.8rem 2rem;
+  background: var(--hot);
+  color: #000;
+  border: none;
+  cursor: pointer;
+  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.btn-convert:hover:not(:disabled) {
+  background: var(--hot2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255,94,26,0.3);
+}
+.btn-convert:active:not(:disabled) { transform: scale(0.97); }
+.btn-convert:disabled { background: var(--border); color: var(--dim); cursor: not-allowed; clip-path: none; }
+
+.btn-clear {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  padding: 0.8rem 1.25rem;
+  background: none;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.btn-clear:hover { border-color: var(--mid); color: var(--light); }
+
+.file-count {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  color: var(--dim);
+  letter-spacing: 0.06em;
+}
+
+/* ════════════════════════════════
+   NOTICE
+════════════════════════════════ */
+.notice {
+  padding: 0.8rem 1rem;
+  background: var(--coldglow);
+  border: 1px solid rgba(0,212,255,0.12);
+  border-left: 3px solid var(--cold);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.notice strong { color: var(--cold); font-weight: 400; }
+.notice.warn {
+  background: rgba(255,204,0,0.05);
+  border-color: rgba(255,204,0,0.15);
+  border-left-color: var(--warn);
+}
+.notice.warn strong { color: var(--warn); }
+
+/* ════════════════════════════════
+   BG REMOVER
+════════════════════════════════ */
+.bg-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.6rem; }
+.bg-preview-item {
+  background: var(--plate);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  animation: fileIn 0.35s ease both;
+  transition: border-color 0.2s;
+}
+.bg-preview-item:hover { border-color: var(--cold); }
+.bg-preview-item canvas { width: 100%; display: block; }
+.bg-preview-item .preview-label {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  color: var(--muted);
+  padding: 0.35rem 0.6rem;
+  text-align: center;
+}
+.bg-preview-item .preview-dl {
+  position: absolute; top: 0.4rem; right: 0.4rem;
+  background: var(--ok);
+  color: #000;
+  border: none;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  font-weight: 700;
+  padding: 0.2rem 0.45rem;
+  cursor: pointer;
+  display: none;
+}
+.bg-preview-item:hover .preview-dl { display: block; }
+
+/* SLIDER */
+.slider-row { display: flex; align-items: center; gap: 1rem; }
+.slider-row label { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); white-space: nowrap; }
+.slider-row input[type=range] { flex: 1; accent-color: var(--hot); cursor: pointer; }
+.slider-val { font-family: var(--mono); font-size: 0.78rem; font-weight: 700; color: var(--hot); min-width: 28px; text-align: right; }
+
+/* GIF OPTIONS */
+.gif-options { display: flex; gap: 1rem; flex-wrap: wrap; }
+.gif-opt-group { display: flex; flex-direction: column; gap: 0.3rem; }
+.gif-opt-label { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); }
+.gif-input {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  background: var(--plate);
+  border: 1px solid var(--border);
+  border-bottom: 2px solid var(--hot);
+  color: var(--white);
+  padding: 0.5rem 0.7rem;
+  width: 100px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.gif-input:focus { border-color: var(--hot); border-bottom-color: var(--hot); }
+
+/* ════════════════════════════════
+   SETTINGS
+════════════════════════════════ */
+#page-settings {
+  flex-direction: column;
+  padding: 2.5rem;
+  max-width: 700px;
+  gap: 0;
+}
+
+.settings-title {
+  font-family: var(--sans);
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.4rem;
+}
+.settings-sub {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-bottom: 2.5rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.settings-sub::before { content: '//'; color: var(--hot); opacity: 0.7; }
+
+.settings-group {
+  border: 1px solid var(--border);
+  margin-bottom: 1.25rem;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.settings-group:hover { border-color: var(--mid); }
+
+.settings-group-title {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--hot);
+  padding: 0.7rem 1.2rem;
+  background: var(--hotglow);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 0.4rem;
+  letter-spacing: 0.08em;
+}
+.settings-group-title::before { content: '//'; opacity: 0.5; font-weight: 400; }
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid var(--border);
+  gap: 2rem;
+  transition: background 0.15s;
+}
+.setting-row:last-child { border-bottom: none; }
+.setting-row:hover { background: var(--plate); }
+
+.setting-name { font-size: 0.88rem; font-weight: 500; margin-bottom: 0.2rem; }
+.setting-desc { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); }
+
+/* Toggle */
+.toggle { position: relative; width: 44px; height: 24px; cursor: pointer; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-track { position: absolute; inset: 0; background: var(--border); transition: background 0.22s; }
+.toggle input:checked + .toggle-track { background: var(--hot); }
+.toggle-thumb {
+  position: absolute;
+  top: 4px; left: 4px;
+  width: 16px; height: 16px;
+  background: var(--white);
+  transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
+}
+.toggle input:checked ~ .toggle-thumb { transform: translateX(20px); }
+
+/* Select */
+.setting-select {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  background: var(--plate);
+  border: 1px solid var(--border);
+  color: var(--white);
+  padding: 0.45rem 2rem 0.45rem 0.7rem;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  transition: border-color 0.2s;
+}
+.setting-select:focus { border-color: var(--hot); }
+
+.quality-slider { display: flex; align-items: center; gap: 0.7rem; }
+.quality-slider input[type=range] { width: 110px; accent-color: var(--hot); cursor: pointer; }
+.quality-val { font-family: var(--mono); font-size: 0.8rem; color: var(--hot); min-width: 34px; }
+
+/* ════════════════════════════════
+   FAQ
+════════════════════════════════ */
+#page-faq {
+  flex-direction: column;
+  padding: 2.5rem;
+  max-width: 760px;
+}
+.faq-title {
+  font-family: var(--sans);
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin-bottom: 0.4rem;
+}
+.faq-sub {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-bottom: 2.5rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.faq-sub::before { content: '//'; color: var(--hot); opacity: 0.7; }
+
+.faq-item {
+  border: 1px solid var(--border);
+  border-left: 3px solid transparent;
+  margin-bottom: 0.35rem;
+  overflow: hidden;
+  transition: border-color 0.2s, border-left-color 0.2s;
+}
+.faq-item:hover { border-color: var(--mid); border-left-color: var(--hot); }
+
+.faq-question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.2rem;
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--light);
+  background: var(--plate);
+  transition: background 0.15s, color 0.2s;
+  gap: 1rem;
+}
+.faq-question:hover { background: var(--raised); }
+.faq-question.open { color: var(--hot); }
+
+.faq-chevron { font-size: 0.65rem; color: var(--muted); transition: transform 0.25s, color 0.2s; flex-shrink: 0; }
+.faq-question.open .faq-chevron { transform: rotate(180deg); color: var(--hot); }
+
+.faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+.faq-answer.open { max-height: 500px; }
+.faq-answer-inner {
+  padding: 1rem 1.2rem;
+  font-size: 0.83rem;
+  font-weight: 400;
+  line-height: 1.8;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+}
+.faq-answer-inner strong { color: var(--light); font-weight: 500; }
+.faq-answer-inner code {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  background: var(--raised);
+  padding: 0.1rem 0.4rem;
+  color: var(--cold);
+}
+
+.faq-section-title {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--hot);
+  margin: 2rem 0 0.65rem;
+  display: flex; align-items: center; gap: 0.4rem;
+  letter-spacing: 0.08em;
+}
+.faq-section-title::before { content: '//'; opacity: 0.5; }
+.faq-section-title:first-child { margin-top: 0; }
+
+/* ════════════════════════════════
+   TOAST
+════════════════════════════════ */
+.toast {
+  position: fixed;
+  bottom: 1.5rem; right: 1.5rem;
+  background: var(--raised);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--ok);
+  padding: 0.8rem 1.3rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--ok);
+  z-index: 10000;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s;
+  max-width: 340px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.error { border-left-color: var(--hot); color: var(--hot); }
+.toast.warn  { border-left-color: var(--warn); color: var(--warn); }
+
+/* ════════════════════════════════
+   KEYFRAMES
+════════════════════════════════ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes blink {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.2; }
+}
+
+/* ════════════════════════════════
+   MOBILE
+════════════════════════════════ */
+@media (max-width: 768px) {
+  #page-converter { flex-direction: column; }
+  aside {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 0.75rem;
+    gap: 0.25rem;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-title { display: none; }
+  .conv-btn { padding: 0.5rem 0.75rem; font-size: 0.8rem; width: auto; border-left: none; border-bottom: 2px solid transparent; }
+  .conv-btn.active { border-left: none; border-bottom-color: var(--hot); }
+  .panel-title { font-size: 1.6rem; }
+  .panel-body { padding: 1.25rem; }
+  #page-settings, #page-faq { padding: 1.25rem; }
+  header { padding: 0 1rem; }
+  .btn-enter { clip-path: none; font-size: 0.9rem; padding: 0.9rem 2rem; }
+  .btn-convert { clip-path: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ LANDING ═══════════ -->
+<div class="screen active" id="screen-landing">
+  <div class="landing-bg"></div>
+  <div class="landing-grid"></div>
+  <div class="landing-inner">
+    <div class="landing-tag" id="landing-tag-text">Herramienta de conversión local</div>
+    <h1 class="landing-title">
+      CONV<span class="accent">RT</span>
+      <span class="sub">Convertidor de archivos</span>
+    </h1>
+    <p class="landing-desc" id="landing-desc-text">
+      Convertí imágenes, PDFs, documentos Word, creá GIFs desde video y eliminá fondos de imágenes. Todo en tu navegador, sin servidores.
+    </p>
+    <div class="landing-features">
+      <div class="feat-chip"><span class="dot"></span>Imágenes</div>
+      <div class="feat-chip"><span class="dot"></span>PDF → IMG</div>
+      <div class="feat-chip"><span class="dot"></span>Word → PDF</div>
+      <div class="feat-chip"><span class="dot"></span>Video → GIF</div>
+      <div class="feat-chip"><span class="dot" style="background:#bb77ff"></span>Borrar fondo</div>
+    </div>
+    <button class="btn-enter" onclick="enterApp()">
+      <span id="enter-btn-text">Entrar a la app</span>
+      <span class="arrow">→</span>
+    </button>
+    <p class="landing-note" id="landing-note-text">
+      <span>100% local</span> — tus archivos nunca se suben a ningún servidor
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════ APP ═══════════ -->
+<div class="screen" id="screen-app">
+
+  <header>
+    <div class="logo" onclick="goLanding()">CONV<span>RT</span></div>
+    <div class="header-nav">
+      <button class="nav-btn active" id="nav-converter" onclick="switchAppPage('converter', this)">Convertir</button>
+      <button class="nav-btn" id="nav-settings" onclick="switchAppPage('settings', this)">Config</button>
+      <button class="nav-btn" id="nav-faq" onclick="switchAppPage('faq', this)">Ayuda</button>
+    </div>
+    <div class="status-dot"><span id="status-dot-text">Listo</span></div>
+  </header>
+
+  <!-- CONVERTER -->
+  <div class="app-page active" id="page-converter">
+    <aside>
+      <div class="sidebar-title" id="sidebar-title">Conversiones</div>
+      <button class="conv-btn active" onclick="switchPanel('img', this)">
+        <span class="conv-icon">🖼</span>
+        <span id="conv-images-text">Imágenes</span>
+        <span class="conv-badge">JPG PNG WEBP</span>
+      </button>
+      <button class="conv-btn" onclick="switchPanel('pdf2img', this)">
+        <span class="conv-icon">📄</span>
+        <span id="conv-pdf2img-text">PDF → Img</span>
+        <span class="conv-badge">PDF</span>
+      </button>
+      <button class="conv-btn" onclick="switchPanel('word2pdf', this)">
+        <span class="conv-icon">📝</span>
+        <span id="conv-word2pdf-text">Word → PDF</span>
+        <span class="conv-badge">DOCX</span>
+      </button>
+      <button class="conv-btn" onclick="switchPanel('vid2gif', this)">
+        <span class="conv-icon">🎬</span>
+        <span id="conv-vid2gif-text">Video → GIF</span>
+        <span class="conv-badge">MP4 WEBM</span>
+      </button>
+      <button class="conv-btn" onclick="switchPanel('bgremove', this)">
+        <span class="conv-icon">✂️</span>
+        <span id="conv-bgremove-text">Borrar Fondo</span>
+        <span class="conv-badge">PNG JPG</span>
+      </button>
+    </aside>
+
+    <div class="content">
+
+      <!-- IMÁGENES -->
+      <div class="panel active" id="panel-img">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">IMG <span class="arrow">→</span> IMG</div>
+            <div class="panel-subtitle" id="img-subtitle">Convertí entre formatos de imagen sin pérdida de calidad</div>
+          </div>
+          <div class="format-pills">
+            <span class="pill">JPG</span><span class="pill">PNG</span>
+            <span class="pill">WEBP</span><span class="pill hi">→ elegí abajo</span>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="format-selector">
+            <span class="format-label format-label-to">Convertir a →</span>
+            <div class="format-options">
+              <button class="fmt-opt selected" onclick="selectFmt('img','png',this)">PNG</button>
+              <button class="fmt-opt" onclick="selectFmt('img','jpeg',this)">JPG</button>
+              <button class="fmt-opt" onclick="selectFmt('img','webp',this)">WEBP</button>
+              <button class="fmt-opt" onclick="selectFmt('img','bmp',this)">BMP</button>
+            </div>
+          </div>
+          <div class="drop-zone" onclick="document.getElementById('input-img').click()"
+            ondragover="handleDragOver(event,this)" ondragleave="handleDragLeave(this)" ondrop="handleDrop(event,'img')">
+            <input type="file" id="input-img" multiple accept="image/*" onchange="handleFiles(this.files,'img')"/>
+            <span class="drop-icon">⬡</span>
+            <div class="drop-main">Arrastrá o hacé clic</div>
+            <div class="drop-sub" id="drop-sub-img">Múltiples archivos soportados</div>
+            <span class="drop-types">JPG · PNG · WEBP · BMP · GIF</span>
+          </div>
+          <div class="file-list" id="files-img"></div>
+          <div class="progress-wrap" id="progress-img">
+            <div class="progress-label"><span id="progress-img-lbl">Convirtiendo...</span><span id="progress-img-pct">0%</span></div>
+            <div class="progress-bar"><div class="progress-fill" id="progress-img-fill"></div></div>
+          </div>
+          <div class="notice" id="notice-img"><strong>Procesamiento local</strong> — Tus archivos nunca salen de tu navegador.</div>
+          <div class="action-bar">
+            <button class="btn-convert btn-convert-img" id="btn-img" onclick="convertImages()" disabled>Convertir</button>
+            <button class="btn-clear" onclick="clearFiles('img')"><span class="btn-clear-label">Limpiar</span></button>
+            <span class="file-count" id="count-img">0 archivos</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PDF → IMAGEN -->
+      <div class="panel" id="panel-pdf2img">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">PDF <span class="arrow">→</span> IMG</div>
+            <div class="panel-subtitle" id="pdf-subtitle">Extraé cada página del PDF como imagen de alta resolución</div>
+          </div>
+          <div class="format-pills"><span class="pill">PDF</span><span class="pill hi">→ PNG / JPG</span></div>
+        </div>
+        <div class="panel-body">
+          <div class="format-selector">
+            <span class="format-label" id="format-label-pdf">Formato de salida →</span>
+            <div class="format-options">
+              <button class="fmt-opt selected" onclick="selectFmt('pdf2img','png',this)">PNG</button>
+              <button class="fmt-opt" onclick="selectFmt('pdf2img','jpeg',this)">JPG</button>
+            </div>
+          </div>
+          <div class="drop-zone" onclick="document.getElementById('input-pdf2img').click()"
+            ondragover="handleDragOver(event,this)" ondragleave="handleDragLeave(this)" ondrop="handleDrop(event,'pdf2img')">
+            <input type="file" id="input-pdf2img" multiple accept=".pdf" onchange="handleFiles(this.files,'pdf2img')"/>
+            <span class="drop-icon">◈</span>
+            <div class="drop-main">Arrastrá o hacé clic</div>
+            <div class="drop-sub" id="drop-sub-pdf">Múltiples archivos soportados</div>
+            <span class="drop-types">Solo PDF</span>
+          </div>
+          <div class="file-list" id="files-pdf2img"></div>
+          <div class="progress-wrap" id="progress-pdf2img">
+            <div class="progress-label"><span id="progress-pdf2img-lbl">Procesando PDF...</span><span id="progress-pdf2img-pct">0%</span></div>
+            <div class="progress-bar"><div class="progress-fill" id="progress-pdf2img-fill"></div></div>
+          </div>
+          <div class="notice" id="notice-pdf"><strong>PDF.js</strong> — Renderizado directo en el navegador. Sin servidores.</div>
+          <div class="action-bar">
+            <button class="btn-convert btn-convert-img" id="btn-pdf2img" onclick="convertPdfToImg()" disabled>Convertir</button>
+            <button class="btn-clear" onclick="clearFiles('pdf2img')"><span class="btn-clear-label">Limpiar</span></button>
+            <span class="file-count" id="count-pdf2img">0 archivos</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- WORD → PDF -->
+      <div class="panel" id="panel-word2pdf">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">WORD <span class="arrow">→</span> PDF</div>
+            <div class="panel-subtitle" id="word-subtitle">Convertí documentos .docx preservando el formato</div>
+          </div>
+          <div class="format-pills"><span class="pill">DOCX</span><span class="pill hi">→ PDF</span></div>
+        </div>
+        <div class="panel-body">
+          <div class="drop-zone" onclick="document.getElementById('input-word2pdf').click()"
+            ondragover="handleDragOver(event,this)" ondragleave="handleDragLeave(this)" ondrop="handleDrop(event,'word2pdf')">
+            <input type="file" id="input-word2pdf" multiple accept=".docx" onchange="handleFiles(this.files,'word2pdf')"/>
+            <span class="drop-icon">▲</span>
+            <div class="drop-main">Arrastrá o hacé clic</div>
+            <div class="drop-sub" id="drop-sub-word">Múltiples archivos soportados</div>
+            <span class="drop-types">Solo .docx</span>
+          </div>
+          <div class="file-list" id="files-word2pdf"></div>
+          <div class="progress-wrap" id="progress-word2pdf">
+            <div class="progress-label"><span id="progress-word2pdf-lbl">Procesando...</span><span id="progress-word2pdf-pct">0%</span></div>
+            <div class="progress-bar"><div class="progress-fill" id="progress-word2pdf-fill"></div></div>
+          </div>
+          <div class="notice warn" id="notice-word"><strong>Nota:</strong> Se abrirá el diálogo de impresión. Elegí <strong>"Guardar como PDF"</strong> como destino.</div>
+          <div class="action-bar">
+            <button class="btn-convert btn-convert-img" id="btn-word2pdf" onclick="convertWordToPdf()" disabled>Convertir</button>
+            <button class="btn-clear" onclick="clearFiles('word2pdf')"><span class="btn-clear-label">Limpiar</span></button>
+            <span class="file-count" id="count-word2pdf">0 archivos</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIDEO → GIF -->
+      <div class="panel" id="panel-vid2gif">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">VIDEO <span class="arrow">→</span> GIF</div>
+            <div class="panel-subtitle" id="vid-subtitle">Convertí fragmentos de video en GIFs animados</div>
+          </div>
+          <div class="format-pills"><span class="pill">MP4</span><span class="pill">WEBM</span><span class="pill hi">→ GIF</span></div>
+        </div>
+        <div class="panel-body">
+          <div class="gif-options">
+            <div class="gif-opt-group">
+              <span class="gif-opt-label" id="gif-label-start">Inicio (seg)</span>
+              <input class="gif-input" type="number" id="gif-start" value="0" min="0" step="0.5"/>
+            </div>
+            <div class="gif-opt-group">
+              <span class="gif-opt-label" id="gif-label-duration">Duración (seg)</span>
+              <input class="gif-input" type="number" id="gif-duration" value="3" min="0.5" max="15" step="0.5"/>
+            </div>
+            <div class="gif-opt-group">
+              <span class="gif-opt-label" id="gif-label-fps">FPS</span>
+              <input class="gif-input" type="number" id="gif-fps" value="10" min="5" max="24" step="1"/>
+            </div>
+            <div class="gif-opt-group">
+              <span class="gif-opt-label" id="gif-label-width">Ancho (px)</span>
+              <input class="gif-input" type="number" id="gif-width" value="480" min="100" max="1280" step="10"/>
+            </div>
+          </div>
+          <div class="drop-zone" onclick="document.getElementById('input-vid2gif').click()"
+            ondragover="handleDragOver(event,this)" ondragleave="handleDragLeave(this)" ondrop="handleDrop(event,'vid2gif')">
+            <input type="file" id="input-vid2gif" accept="video/*" onchange="handleFiles(this.files,'vid2gif')"/>
+            <span class="drop-icon">🎬</span>
+            <div class="drop-main">Arrastrá o hacé clic</div>
+            <div class="drop-sub" id="drop-sub-vid">Un video a la vez</div>
+            <span class="drop-types">MP4 · WEBM · MOV</span>
+          </div>
+          <div id="vid-preview-wrap" style="display:none;">
+            <video id="vid-preview" controls style="max-width:100%;max-height:220px;background:#000;display:block;"></video>
+          </div>
+          <div class="file-list" id="files-vid2gif"></div>
+          <div class="progress-wrap" id="progress-vid2gif">
+            <div class="progress-label"><span id="progress-vid2gif-lbl">Generando GIF...</span><span id="progress-vid2gif-pct">0%</span></div>
+            <div class="progress-bar"><div class="progress-fill" id="progress-vid2gif-fill"></div></div>
+          </div>
+          <div id="gif-result" style="display:none;text-align:center;">
+            <img id="gif-output" style="max-width:100%;max-height:300px;border:1px solid var(--border);display:inline-block;" alt="GIF"/>
+            <div style="margin-top:0.75rem;">
+              <button class="btn-convert" onclick="downloadGif()"><span id="btn-dl-gif-text">Descargar GIF</span></button>
+            </div>
+          </div>
+          <div class="notice warn" id="notice-gif"><strong>Nota:</strong> GIFs generados mediante captura de frames. Para mejores resultados usá videos cortos.</div>
+          <div class="action-bar">
+            <button class="btn-convert" id="btn-vid2gif" onclick="convertVideoToGif()" disabled>Generar GIF</button>
+            <button class="btn-clear" onclick="clearVid()"><span class="btn-clear-label">Limpiar</span></button>
+            <span class="file-count" id="count-vid2gif">0 archivos</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BORRAR FONDO -->
+      <div class="panel" id="panel-bgremove">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">BORRAR <span class="arrow">→</span> FONDO</div>
+            <div class="panel-subtitle" id="bg-subtitle">Eliminá el fondo de imágenes automáticamente</div>
+          </div>
+          <div class="format-pills"><span class="pill">JPG</span><span class="pill">PNG</span><span class="pill hi">→ PNG transparente</span></div>
+        </div>
+        <div class="panel-body">
+          <div class="slider-row">
+            <label id="tolerance-label">Tolerancia</label>
+            <input type="range" id="bg-tolerance" min="5" max="80" value="30"
+              oninput="document.getElementById('tol-val').textContent=this.value"/>
+            <span class="slider-val" id="tol-val">30</span>
+          </div>
+          <div class="drop-zone" onclick="document.getElementById('input-bgremove').click()"
+            ondragover="handleDragOver(event,this)" ondragleave="handleDragLeave(this)" ondrop="handleDrop(event,'bgremove')">
+            <input type="file" id="input-bgremove" multiple accept="image/*" onchange="handleFiles(this.files,'bgremove')"/>
+            <span class="drop-icon">✂</span>
+            <div class="drop-main">Arrastrá o hacé clic</div>
+            <div class="drop-sub" id="drop-sub-bg">Funciona mejor con fondos de color uniforme</div>
+            <span class="drop-types">JPG · PNG · WEBP</span>
+          </div>
+          <div class="file-list" id="files-bgremove"></div>
+          <div class="progress-wrap" id="progress-bgremove">
+            <div class="progress-label"><span id="progress-bgremove-lbl">Procesando...</span><span id="progress-bgremove-pct">0%</span></div>
+            <div class="progress-bar"><div class="progress-fill" id="progress-bgremove-fill"></div></div>
+          </div>
+          <div class="bg-preview-grid" id="bg-previews"></div>
+          <div class="notice warn" id="notice-bg"><strong>Algoritmo local:</strong> Usa flood-fill desde las esquinas. Funciona mejor con fondos uniformes.</div>
+          <div class="action-bar">
+            <button class="btn-convert" id="btn-bgremove" onclick="removeBackgrounds()" disabled>Borrar Fondo</button>
+            <button class="btn-clear" onclick="clearFiles('bgremove'); document.getElementById('bg-previews').innerHTML=''">
+              <span class="btn-clear-label">Limpiar</span>
+            </button>
+            <span class="file-count" id="count-bgremove">0 archivos</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /page-converter -->
+
+  <!-- SETTINGS -->
+  <div class="app-page" id="page-settings">
+    <div class="settings-title" id="settings-title">Configuración</div>
+    <p class="settings-sub" id="settings-sub">Personalizá el comportamiento de CONVRT</p>
+
+    <div class="settings-group">
+      <div class="settings-group-title" id="settings-grp-quality">Calidad de exportación</div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-name" id="setting-jpg-name">Calidad JPG / WEBP</div>
+          <div class="setting-desc" id="setting-jpg-desc">Nivel de compresión para imágenes JPG y WEBP (1–100)</div>
+        </div>
+        <div class="setting-control quality-slider">
+          <input type="range" min="50" max="100" value="92" id="cfg-quality"
+            oninput="document.getElementById('cfg-quality-val').textContent=this.value+'%'"/>
+          <span class="quality-val" id="cfg-quality-val">92%</span>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-name" id="setting-pdfscale-name">Escala PDF</div>
+          <div class="setting-desc" id="setting-pdfscale-desc">Factor de resolución al convertir páginas PDF a imagen</div>
+        </div>
+        <div class="setting-control">
+          <select class="setting-select" id="cfg-pdfscale">
+            <option value="1" id="setting-pdfscale-1">1x — Rápido</option>
+            <option value="2" selected id="setting-pdfscale-2">2x — Balanceado</option>
+            <option value="3" id="setting-pdfscale-3">3x — Alta calidad</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group-title" id="settings-grp-ui">Interfaz</div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-name" id="setting-toasts-name">Notificaciones</div>
+          <div class="setting-desc" id="setting-toasts-desc">Mostrar toast al completar cada conversión</div>
+        </div>
+        <div class="setting-control">
+          <label class="toggle">
+            <input type="checkbox" checked id="cfg-toasts"/>
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-name" id="setting-autodl-name">Descarga automática</div>
+          <div class="setting-desc" id="setting-autodl-desc">Descargar archivos automáticamente al finalizar</div>
+        </div>
+        <div class="setting-control">
+          <label class="toggle">
+            <input type="checkbox" checked id="cfg-autoDl"/>
+            <div class="toggle-track"></div>
+            <div class="toggle-thumb"></div>
+          </label>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-name" id="setting-lang-name">Idioma</div>
+          <div class="setting-desc" id="setting-lang-desc">Idioma de la interfaz</div>
+        </div>
+        <div class="setting-control">
+          <select class="setting-select" id="cfg-lang">
+            <option value="es">Español</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group-title" id="settings-grp-gif">GIF</div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-name" id="setting-gif-fps-name">FPS por defecto</div>
+          <div class="setting-desc" id="setting-gif-fps-desc">Frames por segundo al generar GIFs</div>
+        </div>
+        <div class="setting-control">
+          <select class="setting-select" id="cfg-gifFps">
+            <option value="5">5 FPS</option>
+            <option value="10" selected>10 FPS</option>
+            <option value="15">15 FPS</option>
+            <option value="24">24 FPS</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="app-page" id="page-faq">
+    <div class="faq-title" id="faq-title">Ayuda & FAQ</div>
+    <p class="faq-sub" id="faq-sub">Preguntas frecuentes sobre el uso de CONVRT</p>
+    <div id="faq-container"></div>
+  </div>
+
+</div><!-- /screen-app -->
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

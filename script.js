@@ -927,3 +927,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setLang(this.value);
   });
 });
+
+
+// Enhanced version
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
