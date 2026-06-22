@@ -1,8 +1,67 @@
 {
-  "name":"CONVERT",
-  "short_name":"CONVERT",
-  "start_url":"./index.html",
-  "display":"standalone",
-  "background_color":"#080808",
-  "theme_color":"#080808"
+  "name": "CONVRT — Convertidor de archivos local",
+  "short_name": "CONVRT",
+  "description": "Convertí imágenes, PDFs, Word, creá GIFs y eliminá fondos. Todo local en tu navegador.",
+  "start_url": "./index.html?source=pwa",
+  "display": "standalone",
+  "background_color": "#1d1d1f",
+  "theme_color": "#1d1d1f",
+  "orientation": "any",
+  "categories": ["utilities", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Convertir imagen",
+      "short_name": "Imágenes",
+      "description": "Abrir conversor de imágenes",
+      "url": "./index.html?source=pwa&tool=img"
+    },
+    {
+      "name": "Video a GIF",
+      "short_name": "Video→GIF",
+      "description": "Abrir conversor de video a GIF",
+      "url": "./index.html?source=pwa&tool=vid2gif"
+    },
+    {
+      "name": "PDF a imagen",
+      "short_name": "PDF→Img",
+      "description": "Abrir conversor de PDF a imagen",
+      "url": "./index.html?source=pwa&tool=pdf2img"
+    }
+  ],
+  "share_target": {
+    "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%231d1d1f'/%3E%3Ctext x='96' y='135' font-family='sans-serif' font-size='100' font-weight='bold' fill='%2378aeed' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%231d1d1f'/%3E%3Ctext x='256' y='360' font-family='sans-serif' font-size='280' font-weight='bold' fill='%2378aeed' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%231d1d1f' rx='32'/%3E%3Ctext x='96' y='135' font-family='sans-serif' font-size='100' font-weight='bold' fill='%2378aeed' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%231d1d1f' rx='72'/%3E%3Ctext x='256' y='360' font-family='sans-serif' font-size='280' font-weight='bold' fill='%2378aeed' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": []
 }

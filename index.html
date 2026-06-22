@@ -2,1853 +2,788 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>CONVRT — Convertidor de archivos</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
-<link rel="manifest" href="manifest.json"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>CONVRT — Convertidor de archivos local, sin servidores</title>
+<meta name="description" content="Convertí imágenes, PDFs, Word, creá GIFs y eliminá fondos. 100% en tu navegador, sin subir archivos a ningún servidor. Rápido, privado y sin límites."/>
+<link rel="canonical" href="https://convrt.app/"/>
+
+<!-- Open Graph -->
+<meta property="og:title" content="CONVRT — Convertidor de archivos local"/>
+<meta property="og:description" content="Convertí imágenes, PDFs, documentos Word, creá GIFs desde video y eliminá fondos. Todo en tu navegador, sin servidores."/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://convrt.app/"/>
+<meta property="og:image" content="https://convrt.app/og-image.png"/>
+<meta property="og:locale" content="es_AR"/>
+<meta property="og:site_name" content="CONVRT"/>
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="CONVRT — Convertidor de archivos local"/>
+<meta name="twitter:description" content="Convertí archivos al instante, 100% en tu navegador. Sin servidores, sin límites."/>
+
+<!-- Schema.org SoftwareApplication -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "CONVRT",
+  "operatingSystem": "Web",
+  "applicationCategory": "Multimedia",
+  "description": "Convertidor de archivos local. Imágenes, PDFs, Word, GIFs y remoción de fondos. Todo en el navegador, sin servidores.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Person",
+    "name": "CONVRT"
+  },
+  "browserRequirements": "Requires JavaScript. Works in Chrome, Firefox, Safari, Edge."
+}
+</script>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
 <style>
-
-/* ════════════════════════════════
-   CONVRT — Design System v2
-   BWL aesthetic: sharp, editorial, dark
-════════════════════════════════ */
-:root {
-  --black:    #060606;
-  --deep:     #090909;
-  --plate:    #0e0e0e;
-  --raised:   #141414;
-  --border:   #1c1c1c;
-  --mid:      #2a2a2a;
-  --dim:      #444;
-  --muted:    #666;
-  --sub:      #999;
-  --light:    #ccc;
-  --white:    #efefef;
-
-  --hot:      #ff4d00;
-  --hot2:     #ff7340;
-  --hotglow:  rgba(255,77,0,0.08);
-  --hotglow2: rgba(255,77,0,0.18);
-  --cold:     #00c8ff;
-  --coldglow: rgba(0,200,255,0.07);
-  --ok:       #00e87a;
-  --okglow:   rgba(0,232,122,0.08);
-  --warn:     #f5c400;
-  --purple:   #a855f7;
-
-  --mono: 'Space Mono', monospace;
-  --sans: 'Space Grotesk', sans-serif;
-
-  --radius: 0;
-  --transition: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-
-body {
-  background: var(--black);
-  color: var(--white);
-  font-family: var(--sans);
-  min-height: 100vh;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* Noise texture overlay */
-body::after {
-  content: '';
-  position: fixed; inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 9999;
-}
-
-/* ════════════════
-   SCREENS
-════════════════ */
-.screen { display: none; min-height: 100vh; }
-.screen.active { display: flex; flex-direction: column; }
-
-/* ════════════════════════════════
-   LANDING
-════════════════════════════════ */
-#screen-landing {
-  position: relative;
-  overflow: hidden;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background: var(--black);
-}
-
-/* Ambient glows */
-.landing-bg {
-  position: absolute; inset: 0;
-  background:
-    radial-gradient(ellipse 700px 600px at -5% 10%, rgba(255,77,0,0.09) 0%, transparent 65%),
-    radial-gradient(ellipse 500px 400px at 105% 90%, rgba(0,200,255,0.06) 0%, transparent 65%),
-    radial-gradient(ellipse 400px 350px at 60% 105%, rgba(0,232,122,0.04) 0%, transparent 60%);
-}
-
-/* Fine grid */
-.landing-grid {
-  position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(ellipse 85% 85% at 50% 50%, black 0%, transparent 75%);
-}
-
-/* Horizontal scan line */
-.landing-scan {
-  position: absolute;
-  left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent 0%, var(--hot) 20%, var(--cold) 80%, transparent 100%);
-  opacity: 0.15;
-  top: 50%;
-  animation: scan 8s ease-in-out infinite;
-}
-@keyframes scan {
-  0%, 100% { top: 30%; opacity: 0; }
-  50% { top: 70%; opacity: 0.15; }
-}
-
-.landing-inner {
-  position: relative;
-  z-index: 1;
-  max-width: 960px;
-  padding: 5rem 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-}
-
-/* Eyebrow */
-.landing-tag {
-  font-family: var(--mono);
-  font-size: 0.65rem;
-  color: var(--hot);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  margin-bottom: 2rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  animation: fadeUp 0.5s 0.05s both;
-}
-.landing-tag::before {
-  content: '';
-  display: block;
-  width: 24px; height: 1px;
-  background: var(--hot);
-}
-
-/* Huge display title */
-.landing-title {
-  font-family: var(--sans);
-  font-size: clamp(5.5rem, 20vw, 15rem);
-  font-weight: 700;
-  line-height: 0.88;
-  letter-spacing: -0.05em;
-  margin-bottom: 0;
-  animation: titleReveal 0.8s 0.1s both;
-}
-.landing-title .t-accent { color: var(--hot); }
-.landing-title .t-sub {
-  display: block;
-  font-family: var(--mono);
-  font-size: 0.115em;
-  font-weight: 400;
-  color: var(--muted);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  margin-top: 1.6rem;
-  margin-left: 0.1em;
-}
-
-@keyframes titleReveal {
-  from { opacity: 0; transform: translateY(50px); filter: blur(10px); }
-  to   { opacity: 1; transform: translateY(0); filter: blur(0); }
-}
-
-/* Divider line */
-.landing-divider {
-  width: 100%;
-  height: 1px;
-  background: var(--border);
-  margin: 3rem 0;
-  position: relative;
-  animation: fadeUp 0.5s 0.35s both;
-}
-.landing-divider::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 0;
-  width: 120px; height: 1px;
-  background: linear-gradient(90deg, var(--hot), transparent);
-}
-
-/* Desc + features row */
-.landing-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 4rem;
-  width: 100%;
-  animation: fadeUp 0.5s 0.4s both;
-}
-
-.landing-desc {
-  font-size: 1rem;
-  font-weight: 400;
-  color: var(--sub);
-  line-height: 1.85;
-  max-width: 340px;
-  flex-shrink: 0;
-}
-
-/* Feature grid */
-.landing-features {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  flex: 1;
-  background: var(--border);
-  border: 1px solid var(--border);
-}
-
-.feat-chip {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  color: var(--sub);
-  background: var(--black);
-  padding: 0.8rem 1rem;
-  letter-spacing: 0.04em;
-  transition: background var(--transition), color var(--transition);
-  cursor: default;
-}
-.feat-chip:hover {
-  background: var(--plate);
-  color: var(--light);
-}
-.feat-chip .dot {
-  width: 4px; height: 4px;
-  border-radius: 50%;
-  background: var(--hot);
-  flex-shrink: 0;
-}
-.feat-chip:nth-child(2) .dot { background: var(--cold); }
-.feat-chip:nth-child(3) .dot { background: var(--ok); }
-.feat-chip:nth-child(4) .dot { background: var(--warn); }
-.feat-chip:nth-child(5) .dot { background: var(--purple); }
-
-/* CTA zone */
-.landing-cta {
-  margin-top: 3.5rem;
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  animation: fadeUp 0.5s 0.6s both;
-}
-
-.btn-enter {
-  display: inline-flex;
-  align-items: center;
-  gap: 1.5rem;
-  font-family: var(--sans);
-  font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 1.1rem 2.5rem;
-  background: var(--hot);
-  color: #000;
-  border: none;
-  cursor: pointer;
-  clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
-  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
-  position: relative;
-}
-.btn-enter::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, rgba(255,255,255,0.15) 0%, transparent 40%);
-  pointer-events: none;
-}
-.btn-enter:hover {
-  background: var(--hot2);
-  transform: translateY(-2px);
-  box-shadow: 0 16px 48px rgba(255,77,0,0.3), 0 0 0 1px rgba(255,77,0,0.2);
-}
-.btn-enter .arrow {
-  font-size: 1.1rem;
-  transition: transform 0.2s;
-  font-family: var(--mono);
-}
-.btn-enter:hover .arrow { transform: translateX(5px); }
-
-.landing-note {
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  color: var(--dim);
-  letter-spacing: 0.06em;
-  line-height: 1.8;
-}
-.landing-note .ok { color: var(--ok); }
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ════════════════════════════════
-   APP SHELL
-════════════════════════════════ */
-#screen-app { min-height: 100vh; }
-
-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 1.75rem;
-  height: 56px;
-  border-bottom: 1px solid var(--border);
-  background: rgba(6,6,6,0.95);
-  backdrop-filter: blur(12px);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  flex-shrink: 0;
-}
-
-/* Accent line under header */
-header::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0;
-  width: 100%; height: 1px;
-  background: linear-gradient(90deg, var(--hot) 0%, var(--cold) 35%, transparent 60%);
-  opacity: 0.6;
-}
-
-.logo {
-  font-family: var(--sans);
-  font-size: 1.2rem;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  cursor: pointer;
-  transition: opacity var(--transition);
-  user-select: none;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.logo::before {
-  content: '';
-  display: block;
-  width: 6px; height: 6px;
-  background: var(--hot);
-  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
-}
-.logo:hover { opacity: 0.5; }
-.logo .logo-accent { color: var(--hot); }
-
-.header-nav { display: flex; gap: 0; }
-
-.nav-btn {
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 0 1rem;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--muted);
-  cursor: pointer;
-  transition: color var(--transition), border-color var(--transition);
-  height: 56px;
-}
-.nav-btn:hover { color: var(--light); }
-.nav-btn.active { color: var(--white); border-bottom-color: var(--hot); }
-
-.status-dot {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: var(--mono);
-  font-size: 0.58rem;
-  color: var(--ok);
-  letter-spacing: 0.05em;
-}
-.status-dot::before {
-  content: '';
-  width: 5px; height: 5px;
-  background: var(--ok);
-  border-radius: 50%;
-  box-shadow: 0 0 6px var(--ok);
-  animation: blink 2.5s ease-in-out infinite;
-}
-
-/* APP SUBPAGES */
-.app-page { display: none; flex: 1; }
-.app-page.active {
-  display: flex;
-  animation: pageIn 0.25s ease both;
-}
-@keyframes pageIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ════════════════════════════════
-   CONVERTER LAYOUT
-════════════════════════════════ */
-#page-converter {
-  flex-direction: row;
-  min-height: calc(100vh - 56px);
-}
-
-/* SIDEBAR */
-aside {
-  width: 220px;
-  flex-shrink: 0;
-  border-right: 1px solid var(--border);
-  padding: 1.25rem 0;
-  display: flex;
-  flex-direction: column;
-  background: var(--deep);
-}
-
-.sidebar-title {
-  font-family: var(--mono);
-  font-size: 0.55rem;
-  color: var(--dim);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  padding: 0 1rem 0.9rem;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 0.5rem;
-}
-
-.conv-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  padding: 0.8rem 1rem;
-  background: none;
-  border: none;
-  border-left: 2px solid transparent;
-  color: var(--muted);
-  font-family: var(--sans);
-  font-size: 0.82rem;
-  font-weight: 500;
-  cursor: pointer;
-  text-align: left;
-  transition: color var(--transition), border-color var(--transition), background var(--transition);
-  width: 100%;
-}
-.conv-btn:hover {
-  color: var(--light);
-  background: var(--plate);
-  border-left-color: var(--mid);
-}
-.conv-btn.active {
-  color: var(--white);
-  background: var(--plate);
-  border-left-color: var(--hot);
-}
-
-.conv-icon {
-  font-size: 0.9rem;
-  width: 18px;
-  text-align: center;
-  flex-shrink: 0;
-  opacity: 0.7;
-}
-.conv-btn.active .conv-icon { opacity: 1; }
-
-.conv-badge {
-  font-family: var(--mono);
-  font-size: 0.5rem;
-  letter-spacing: 0.05em;
-  padding: 0.12rem 0.35rem;
-  background: var(--raised);
-  border: 1px solid var(--border);
-  color: var(--dim);
-  margin-left: auto;
-  white-space: nowrap;
-}
-.conv-btn.active .conv-badge {
-  color: var(--muted);
-  border-color: var(--mid);
-}
-
-.content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-
-/* ════════════════════════════════
-   PANEL
-════════════════════════════════ */
-.panel { display: none; flex-direction: column; flex: 1; }
-.panel.active {
-  display: flex;
-  animation: panelIn 0.2s ease both;
-}
-@keyframes panelIn {
-  from { opacity: 0; transform: translateX(8px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
-.panel-header {
-  padding: 1.75rem 2rem 1.5rem;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-  background: var(--deep);
-}
-
-.panel-title {
-  font-family: var(--sans);
-  font-size: clamp(1.6rem, 3.5vw, 2.5rem);
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: -0.04em;
-}
-.panel-title .arrow {
-  color: var(--hot);
-  font-weight: 300;
-  opacity: 0.7;
-  margin: 0 0.1em;
-}
-
-.panel-subtitle {
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  color: var(--muted);
-  margin-top: 0.5rem;
-  letter-spacing: 0.03em;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.panel-subtitle::before {
-  content: '>';
-  color: var(--hot);
-  opacity: 0.5;
-}
-
-.format-pills {
-  display: flex;
-  gap: 1px;
-  flex-wrap: wrap;
-  align-self: flex-end;
-  background: var(--border);
-  border: 1px solid var(--border);
-}
-.pill {
-  font-family: var(--mono);
-  font-size: 0.55rem;
-  padding: 0.25rem 0.6rem;
-  background: var(--plate);
-  color: var(--dim);
-  letter-spacing: 0.08em;
-}
-.pill.hi {
-  background: var(--coldglow);
-  color: var(--cold);
-}
-
-.panel-body {
-  padding: 1.75rem 2rem;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  overflow-y: auto;
-}
-
-/* ════════════════════════════════
-   FORMAT SELECTOR
-════════════════════════════════ */
-.format-selector {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.format-label {
-  font-family: var(--mono);
-  font-size: 0.58rem;
-  color: var(--dim);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.format-options {
-  display: flex;
-  gap: 1px;
-  background: var(--border);
-}
-
-.fmt-opt {
-  font-family: var(--mono);
-  font-size: 0.68rem;
-  padding: 0.4rem 1rem;
-  border: none;
-  background: var(--plate);
-  color: var(--muted);
-  cursor: pointer;
-  transition: color var(--transition), background var(--transition);
-  letter-spacing: 0.06em;
-}
-.fmt-opt:hover { background: var(--raised); color: var(--light); }
-.fmt-opt.selected {
-  background: var(--hot);
-  color: #000;
-  font-weight: 700;
-}
-
-/* ════════════════════════════════
-   DROP ZONE
-════════════════════════════════ */
-.drop-zone {
-  border: 1px solid var(--border);
-  background: var(--plate);
-  padding: 2.5rem 2rem;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color var(--transition), background var(--transition);
-  position: relative;
-  overflow: hidden;
-}
-
-/* Corner brackets */
-.drop-zone::before,
-.drop-zone::after {
-  content: '';
-  position: absolute;
-  width: 16px; height: 16px;
-  border-color: var(--hot);
-  border-style: solid;
-  opacity: 0.25;
-  transition: opacity var(--transition), width var(--transition), height var(--transition);
-}
-.drop-zone::before { top: 0; left: 0; border-width: 2px 0 0 2px; }
-.drop-zone::after  { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
-
-.drop-zone:hover::before,
-.drop-zone:hover::after,
-.drop-zone.dragover::before,
-.drop-zone.dragover::after {
-  opacity: 0.8;
-  width: 24px; height: 24px;
-}
-
-.drop-zone:hover, .drop-zone.dragover {
-  border-color: rgba(255,77,0,0.4);
-  background: var(--hotglow);
-}
-.drop-zone.dragover {
-  border-color: var(--hot);
-  background: var(--hotglow2);
-}
-.drop-zone input { display: none; }
-
-.drop-icon {
-  font-size: 1.5rem;
-  display: block;
-  margin-bottom: 0.75rem;
-  opacity: 0.2;
-  transition: opacity var(--transition), transform 0.25s;
-}
-.drop-zone:hover .drop-icon,
-.drop-zone.dragover .drop-icon { opacity: 0.5; transform: translateY(-4px); }
-
-.drop-main {
-  font-family: var(--sans);
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--light);
-  margin-bottom: 0.3rem;
-  letter-spacing: -0.01em;
-}
-.drop-sub {
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  color: var(--muted);
-}
-.drop-types {
-  display: inline-block;
-  margin-top: 1rem;
-  font-family: var(--mono);
-  font-size: 0.55rem;
-  letter-spacing: 0.1em;
-  color: var(--dim);
-  background: var(--raised);
-  border: 1px solid var(--border);
-  padding: 0.2rem 0.65rem;
-}
-
-/* ════════════════════════════════
-   FILE LIST
-════════════════════════════════ */
-.file-list { display: flex; flex-direction: column; gap: 2px; }
-
-.file-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.6rem 0.9rem;
-  background: var(--plate);
-  border: 1px solid var(--border);
-  border-left: 2px solid var(--cold);
-  animation: fileIn 0.2s ease both;
-  transition: background var(--transition), border-color var(--transition);
-}
-.file-item:hover { background: var(--raised); border-color: var(--mid); border-left-color: var(--hot); }
-
-@keyframes fileIn {
-  from { opacity: 0; transform: translateX(-6px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
-.file-ext {
-  font-family: var(--mono);
-  font-size: 0.55rem;
-  font-weight: 700;
-  padding: 0.12rem 0.4rem;
-  background: var(--coldglow);
-  border: 1px solid rgba(0,200,255,0.2);
-  color: var(--cold);
-  min-width: 38px;
-  text-align: center;
-  letter-spacing: 0.06em;
-}
-.file-name {
-  flex: 1;
-  font-size: 0.8rem;
-  color: var(--light);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.file-size {
-  font-family: var(--mono);
-  font-size: 0.58rem;
-  color: var(--muted);
-}
-.file-remove {
-  background: none; border: none; color: var(--dim);
-  cursor: pointer; font-size: 0.9rem; line-height: 1; padding: 0.1rem;
-  transition: color var(--transition), transform 0.2s;
-}
-.file-remove:hover { color: var(--hot); transform: rotate(90deg); }
-
-.file-status {
-  font-family: var(--mono);
-  font-size: 0.55rem;
-  min-width: 70px;
-  text-align: right;
-  transition: color 0.25s;
-  letter-spacing: 0.03em;
-}
-.file-status.pending    { color: var(--dim); }
-.file-status.converting { color: var(--cold); animation: pulse 1s ease-in-out infinite; }
-.file-status.done       { color: var(--ok); }
-.file-status.error      { color: var(--hot); }
-
-@keyframes pulse {
-  0%,100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-
-/* ════════════════════════════════
-   PROGRESS
-════════════════════════════════ */
-.progress-wrap { display: none; flex-direction: column; gap: 0.4rem; }
-.progress-wrap.visible { display: flex; animation: fadeUp 0.2s both; }
-
-.progress-label {
-  display: flex;
-  justify-content: space-between;
-  font-family: var(--mono);
-  font-size: 0.58rem;
-  color: var(--muted);
-  letter-spacing: 0.05em;
-}
-.progress-bar { height: 1px; background: var(--border); overflow: hidden; }
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--hot), var(--cold));
-  width: 0%;
-  transition: width 0.4s ease;
-  box-shadow: 0 0 6px var(--cold);
-}
-
-/* ════════════════════════════════
-   ACTION BAR
-════════════════════════════════ */
-.action-bar {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border);
-  margin-top: auto;
-  flex-wrap: wrap;
-}
-
-.btn-convert {
-  font-family: var(--sans);
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 0.75rem 1.75rem;
-  background: var(--hot);
-  color: #000;
-  border: none;
-  cursor: pointer;
-  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
-  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
-  position: relative;
-  overflow: hidden;
-}
-.btn-convert::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, rgba(255,255,255,0.12) 0%, transparent 40%);
-  pointer-events: none;
-}
-.btn-convert:hover:not(:disabled) {
-  background: var(--hot2);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(255,77,0,0.3);
-}
-.btn-convert:active:not(:disabled) { transform: scale(0.97); }
-.btn-convert:disabled {
-  background: var(--raised);
-  color: var(--mid);
-  cursor: not-allowed;
-  clip-path: none;
-  border: 1px solid var(--border);
-}
-
-.btn-clear {
-  font-family: var(--mono);
-  font-size: 0.65rem;
-  padding: 0.75rem 1.1rem;
-  background: none;
-  color: var(--muted);
-  border: 1px solid var(--border);
-  cursor: pointer;
-  transition: color var(--transition), border-color var(--transition);
-  letter-spacing: 0.05em;
-}
-.btn-clear:hover { border-color: var(--mid); color: var(--light); }
-
-.file-count {
-  margin-left: auto;
-  font-family: var(--mono);
-  font-size: 0.58rem;
-  color: var(--dim);
-  letter-spacing: 0.06em;
-}
-
-/* ════════════════════════════════
-   NOTICE
-════════════════════════════════ */
-.notice {
-  padding: 0.75rem 1rem;
-  background: var(--coldglow);
-  border: 1px solid rgba(0,200,255,0.1);
-  border-left: 2px solid var(--cold);
-  font-family: var(--mono);
-  font-size: 0.65rem;
-  color: var(--muted);
-  line-height: 1.7;
-}
-.notice strong { color: var(--cold); font-weight: 400; }
-.notice.warn {
-  background: rgba(245,196,0,0.04);
-  border-color: rgba(245,196,0,0.12);
-  border-left-color: var(--warn);
-}
-.notice.warn strong { color: var(--warn); }
-
-/* ════════════════════════════════
-   BG REMOVER
-════════════════════════════════ */
-.bg-preview-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 2px;
-  background: var(--border);
-}
-.bg-preview-item {
-  background: var(--plate);
-  overflow: hidden;
-  animation: fileIn 0.3s ease both;
-  transition: opacity var(--transition);
-  position: relative;
-}
-.bg-preview-item:hover { opacity: 0.85; }
-.bg-preview-item canvas { width: 100%; display: block; }
-.bg-preview-item .preview-label {
-  font-family: var(--mono);
-  font-size: 0.52rem;
-  color: var(--muted);
-  padding: 0.3rem 0.5rem;
-  text-align: center;
-}
-.bg-preview-item .preview-dl {
-  position: absolute; top: 0.35rem; right: 0.35rem;
-  background: var(--ok);
-  color: #000;
-  border: none;
-  font-family: var(--mono);
-  font-size: 0.52rem;
-  font-weight: 700;
-  padding: 0.18rem 0.4rem;
-  cursor: pointer;
-  display: none;
-  letter-spacing: 0.05em;
-}
-.bg-preview-item:hover .preview-dl { display: block; }
-
-/* SLIDER */
-.slider-row { display: flex; align-items: center; gap: 1rem; }
-.slider-row label {
-  font-family: var(--mono);
-  font-size: 0.6rem;
-  color: var(--muted);
-  white-space: nowrap;
-  letter-spacing: 0.06em;
-}
-.slider-row input[type=range] { flex: 1; accent-color: var(--hot); cursor: pointer; }
-.slider-val {
-  font-family: var(--mono);
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--hot);
-  min-width: 28px;
-  text-align: right;
-}
-
-/* GIF OPTIONS */
-.gif-options { display: flex; gap: 1rem; flex-wrap: wrap; }
-.gif-opt-group { display: flex; flex-direction: column; gap: 0.3rem; }
-.gif-opt-label {
-  font-family: var(--mono);
-  font-size: 0.58rem;
-  color: var(--muted);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.gif-input {
-  font-family: var(--mono);
-  font-size: 0.8rem;
-  background: var(--plate);
-  border: 1px solid var(--border);
-  border-bottom: 1px solid var(--hot);
-  color: var(--white);
-  padding: 0.5rem 0.65rem;
-  width: 90px;
-  outline: none;
-  transition: border-color var(--transition);
-}
-.gif-input:focus { border-color: var(--hot); }
-
-/* ════════════════════════════════
-   SETTINGS
-════════════════════════════════ */
-#page-settings {
-  flex-direction: column;
-  padding: 2.25rem;
-  max-width: 680px;
-  gap: 0;
-}
-
-.settings-title {
-  font-family: var(--sans);
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  margin-bottom: 0.35rem;
-}
-.settings-sub {
-  font-family: var(--mono);
-  font-size: 0.65rem;
-  color: var(--muted);
-  margin-bottom: 2.25rem;
-  display: flex; align-items: center; gap: 0.5rem;
-  letter-spacing: 0.04em;
-}
-.settings-sub::before { content: '//'; color: var(--hot); opacity: 0.6; }
-
-.settings-group {
-  border: 1px solid var(--border);
-  margin-bottom: 1px;
-  overflow: hidden;
-  transition: border-color var(--transition);
-}
-.settings-group:hover { border-color: var(--mid); }
-
-.settings-group-title {
-  font-family: var(--mono);
-  font-size: 0.58rem;
-  color: var(--hot);
-  padding: 0.65rem 1.1rem;
-  background: var(--hotglow);
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 0.4rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-.settings-group-title::before { content: '//'; opacity: 0.4; font-weight: 400; }
-
-.setting-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.9rem 1.1rem;
-  border-bottom: 1px solid var(--border);
-  gap: 2rem;
-  transition: background var(--transition);
-}
-.setting-row:last-child { border-bottom: none; }
-.setting-row:hover { background: var(--plate); }
-
-.setting-name { font-size: 0.85rem; font-weight: 500; margin-bottom: 0.18rem; letter-spacing: -0.01em; }
-.setting-desc { font-family: var(--mono); font-size: 0.62rem; color: var(--muted); }
-
-/* Toggle */
-.toggle { position: relative; width: 40px; height: 22px; cursor: pointer; flex-shrink: 0; }
-.toggle input { opacity: 0; width: 0; height: 0; }
-.toggle-track { position: absolute; inset: 0; background: var(--border); transition: background 0.2s; }
-.toggle input:checked + .toggle-track { background: var(--hot); }
-.toggle-thumb {
-  position: absolute;
-  top: 3px; left: 3px;
-  width: 16px; height: 16px;
-  background: var(--white);
-  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
-}
-.toggle input:checked ~ .toggle-thumb { transform: translateX(18px); }
-
-/* Select */
-.setting-select {
-  font-family: var(--mono);
-  font-size: 0.7rem;
-  background: var(--plate);
-  border: 1px solid var(--border);
-  color: var(--white);
-  padding: 0.4rem 1.8rem 0.4rem 0.65rem;
-  outline: none;
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5'%3E%3Cpath d='M0 0l4.5 5 4.5-5z' fill='%23444'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.55rem center;
-  transition: border-color var(--transition);
-}
-.setting-select:focus { border-color: var(--hot); }
-
-.quality-slider { display: flex; align-items: center; gap: 0.65rem; }
-.quality-slider input[type=range] { width: 100px; accent-color: var(--hot); cursor: pointer; }
-.quality-val { font-family: var(--mono); font-size: 0.75rem; color: var(--hot); min-width: 34px; }
-
-/* ════════════════════════════════
-   FAQ
-════════════════════════════════ */
-#page-faq {
-  flex-direction: column;
-  padding: 2.25rem;
-  max-width: 740px;
-}
-.faq-title {
-  font-family: var(--sans);
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  margin-bottom: 0.35rem;
-}
-.faq-sub {
-  font-family: var(--mono);
-  font-size: 0.65rem;
-  color: var(--muted);
-  margin-bottom: 2.25rem;
-  display: flex; align-items: center; gap: 0.5rem;
-  letter-spacing: 0.04em;
-}
-.faq-sub::before { content: '//'; color: var(--hot); opacity: 0.6; }
-
-.faq-item {
-  border: 1px solid var(--border);
-  border-left: 2px solid transparent;
-  margin-bottom: 1px;
-  overflow: hidden;
-  transition: border-color var(--transition), border-left-color var(--transition);
-}
-.faq-item:hover { border-color: var(--mid); border-left-color: var(--dim); }
-
-.faq-question {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.9rem 1.1rem;
-  cursor: pointer;
-  font-family: var(--sans);
-  font-size: 0.88rem;
-  font-weight: 500;
-  color: var(--sub);
-  background: var(--plate);
-  transition: background var(--transition), color var(--transition);
-  gap: 1rem;
-  letter-spacing: -0.01em;
-}
-.faq-question:hover { background: var(--raised); color: var(--light); }
-.faq-question.open { color: var(--hot); }
-
-.faq-chevron { font-size: 0.6rem; color: var(--muted); transition: transform 0.22s, color 0.2s; flex-shrink: 0; }
-.faq-question.open .faq-chevron { transform: rotate(180deg); color: var(--hot); }
-
-.faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.32s ease; }
-.faq-answer.open { max-height: 500px; }
-.faq-answer-inner {
-  padding: 0.9rem 1.1rem;
-  font-size: 0.8rem;
-  font-weight: 400;
-  line-height: 1.85;
-  color: var(--muted);
-  border-top: 1px solid var(--border);
-}
-.faq-answer-inner strong { color: var(--sub); font-weight: 500; }
-.faq-answer-inner code {
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  background: var(--raised);
-  padding: 0.1rem 0.38rem;
-  color: var(--cold);
-}
-
-.faq-section-title {
-  font-family: var(--mono);
-  font-size: 0.58rem;
-  color: var(--hot);
-  margin: 1.75rem 0 0.5rem;
-  display: flex; align-items: center; gap: 0.4rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-.faq-section-title::before { content: '//'; opacity: 0.4; }
-.faq-section-title:first-child { margin-top: 0; }
-
-/* ════════════════════════════════
-   TOAST
-════════════════════════════════ */
-.toast {
-  position: fixed;
-  bottom: 1.25rem; right: 1.25rem;
-  background: var(--raised);
-  border: 1px solid var(--border);
-  border-left: 2px solid var(--ok);
-  padding: 0.75rem 1.1rem;
-  font-family: var(--mono);
-  font-size: 0.68rem;
-  color: var(--ok);
-  z-index: 10000;
-  transform: translateY(70px);
-  opacity: 0;
-  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s;
-  max-width: 320px;
-  letter-spacing: 0.04em;
-}
-.toast.show { transform: translateY(0); opacity: 1; }
-.toast.error { border-left-color: var(--hot); color: var(--hot); }
-.toast.warn  { border-left-color: var(--warn); color: var(--warn); }
-
-/* ════════════════════════════════
-   URL DOWNLOADER
-════════════════════════════════ */
-.url-input-wrap { display: flex; gap: 0; }
-.url-input {
-  flex: 1;
-  font-family: var(--mono);
-  font-size: 0.8rem;
-  background: var(--plate);
-  border: 1px solid var(--border);
-  border-right: none;
-  border-bottom: 1px solid var(--hot);
-  color: var(--white);
-  padding: 0.8rem 1rem;
-  outline: none;
-  transition: border-color var(--transition);
-}
-.url-input:focus { border-color: var(--hot); }
-.url-input::placeholder { color: var(--dim); }
-.url-fetch-btn {
-  font-family: var(--sans);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  padding: 0.8rem 1.35rem;
-  background: var(--hot);
-  color: #000;
-  border: none;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background var(--transition), transform var(--transition);
-  flex-shrink: 0;
-}
-.url-fetch-btn:hover { background: var(--hot2); transform: translateY(-1px); }
-.url-fetch-btn:disabled { background: var(--raised); color: var(--mid); cursor: not-allowed; transform: none; border: 1px solid var(--border); }
-
-.url-preview-box {
-  display: none;
-  flex-direction: column;
-  gap: 1rem;
-  background: var(--plate);
-  border: 1px solid var(--border);
-  border-left: 2px solid var(--cold);
-  padding: 1.1rem;
-  animation: fadeUp 0.25s both;
-}
-.url-preview-box.visible { display: flex; }
-
-.url-preview-media {
-  max-width: 100%;
-  max-height: 260px;
-  display: block;
-  border: 1px solid var(--border);
-  background: #000;
-}
-video.url-preview-media { width: 100%; }
-
-.url-meta { display: flex; flex-direction: column; gap: 0.35rem; }
-.url-meta-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  color: var(--muted);
-}
-.url-meta-label { color: var(--dim); min-width: 55px; }
-.url-meta-value { color: var(--light); }
-.url-type-badge {
-  display: inline-block;
-  font-family: var(--mono);
-  font-size: 0.55rem;
-  font-weight: 700;
-  padding: 0.12rem 0.45rem;
-  border: 1px solid var(--cold);
-  color: var(--cold);
-  background: var(--coldglow);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.url-type-badge.video { border-color: var(--purple); color: var(--purple); background: rgba(168,85,247,0.07); }
-.url-type-badge.error { border-color: var(--hot); color: var(--hot); background: var(--hotglow); }
-
-.url-dl-bar { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
-.url-dl-btn {
-  font-family: var(--sans);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  padding: 0.7rem 1.5rem;
-  background: var(--ok);
-  color: #000;
-  border: none;
-  cursor: pointer;
-  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
-  transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
-}
-.url-dl-btn:hover {
-  background: #33ffaa;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0,232,122,0.25);
-}
-
-.url-history { display: flex; flex-direction: column; gap: 0; }
-.url-history-title {
-  font-family: var(--mono);
-  font-size: 0.55rem;
-  color: var(--dim);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin-bottom: 0.4rem;
-}
-.url-history-title::before { content: '//'; color: var(--hot); opacity: 0.5; }
-.url-history-item {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.5rem 0.8rem;
-  background: var(--plate);
-  border: 1px solid var(--border);
-  border-top: none;
-  cursor: pointer;
-  transition: background var(--transition), border-color var(--transition);
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  color: var(--muted);
-}
-.url-history-item:first-child { border-top: 1px solid var(--border); }
-.url-history-item:hover { background: var(--raised); color: var(--light); }
-.url-history-item .hist-url { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.url-history-item .hist-type { color: var(--dim); flex-shrink: 0; }
-.url-cors-notice {
-  padding: 0.7rem 0.9rem;
-  background: rgba(245,196,0,0.04);
-  border: 1px solid rgba(245,196,0,0.12);
-  border-left: 2px solid var(--warn);
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  color: var(--muted);
-  line-height: 1.7;
-  display: none;
-}
-.url-cors-notice.visible { display: block; }
-.url-cors-notice strong { color: var(--warn); }
-
-/* ════════════════════════════════
-   KEYFRAMES
-════════════════════════════════ */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes blink {
-  0%,100% { opacity: 1; }
-  50%      { opacity: 0.15; }
-}
-
-/* ════════════════════════════════
-   MOBILE
-════════════════════════════════ */
-@media (max-width: 768px) {
-  .landing-inner { padding: 3.5rem 1.5rem; }
-  .landing-row { flex-direction: column; gap: 2rem; }
-  .landing-features { grid-template-columns: repeat(2, 1fr); }
-  .landing-cta { flex-direction: column; align-items: flex-start; gap: 1.25rem; }
-  .btn-enter { clip-path: none; }
-
-  #page-converter { flex-direction: column; }
-  aside {
-    width: 100%;
-    flex-direction: row;
-    flex-wrap: wrap;
-    padding: 0.5rem;
-    gap: 1px;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    background: var(--border);
-  }
-  .sidebar-title { display: none; }
-  .conv-btn {
-    padding: 0.45rem 0.75rem;
-    font-size: 0.75rem;
-    width: auto;
-    flex: 1;
-    justify-content: center;
-    border-left: none;
-    border-bottom: 2px solid transparent;
-    background: var(--deep);
-  }
-  .conv-btn.active { border-left: none; border-bottom-color: var(--hot); }
-  .conv-badge { display: none; }
-  .panel-title { font-size: 1.5rem; }
-  .panel-body { padding: 1.1rem; }
-  .panel-header { padding: 1.1rem; }
-  #page-settings, #page-faq { padding: 1.1rem; }
-  header { padding: 0 1rem; }
-  .btn-convert { clip-path: none; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-}
+  /* Ensure SF Pro system font is used where available */
+  body { font-family: -apple-system, 'Inter', 'Helvetica Neue', sans-serif; }
 </style>
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%231d1d1f' rx='6'/%3E%3Ctext x='16' y='23' font-family='sans-serif' font-size='18' font-weight='bold' fill='%2378aeed' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E" type="image/svg+xml"/>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%231d1d1f'/%3E%3Ctext x='96' y='135' font-family='sans-serif' font-size='100' font-weight='bold' fill='%2378aeed' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#1d1d1f"/>
+<link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
-<!-- ═══════════ LANDING ═══════════ -->
-<div class="screen active" id="screen-landing">
-  <div class="landing-bg"></div>
-  <div class="landing-grid"></div>
-  <div class="landing-scan"></div>
-  <div class="landing-inner">
-    <div class="landing-tag" id="landing-tag-text">Herramienta de conversión local</div>
-    <h1 class="landing-title">
-      CONV<span class="t-accent">RT</span>
-      <span class="t-sub">Convertidor de archivos</span>
-    </h1>
-    <div class="landing-divider"></div>
-    <div class="landing-row">
-      <p class="landing-desc" id="landing-desc-text">
-        Convertí imágenes, PDFs, documentos Word, creá GIFs desde video y eliminá fondos. Todo en tu navegador, sin servidores.
-      </p>
-      <div class="landing-features">
-        <div class="feat-chip"><span class="dot"></span>Imágenes</div>
-        <div class="feat-chip"><span class="dot"></span>PDF → IMG</div>
-        <div class="feat-chip"><span class="dot"></span>Word → PDF</div>
-        <div class="feat-chip"><span class="dot"></span>Video → GIF</div>
-        <div class="feat-chip"><span class="dot"></span>Borrar fondo</div>
-        <div class="feat-chip"><span class="dot" style="background:var(--cold)"></span>Descargar URL</div>
+<!-- ═══════════════ LANDING — redesigned ═══════════════ -->
+<section class="screen active" id="screen-landing" aria-label="Pantalla de bienvenida">
+
+  <header class="landing-header">
+    <span class="landing-logo">CONVRT</span>
+    <a href="#landing-how" class="landing-header-link" data-i18n="landingHowLink">Cómo funciona</a>
+  </header>
+
+  <main class="landing-main">
+
+    <!-- HERO -->
+    <section class="landing-hero">
+      <h1 class="landing-headline" data-i18n="landingHeadline">Convertí archivos sin subirlos a ningún lado</h1>
+      <p class="landing-sub" data-i18n="landingSub">Imágenes, PDFs, Word, Video a GIF y remoción de fondos — 100% en tu navegador.</p>
+
+      <div class="landing-visual" aria-label="Vista previa de la aplicación">
+        <div class="lv-grid">
+          <div class="lv-item lv-pending">
+            <div class="lv-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                <rect x="4" y="4" width="16" height="20" rx="2" fill="var(--card-bg)" stroke="var(--text-4)" stroke-width="1.2"/>
+                <circle cx="12" cy="12" r="4" fill="none" stroke="var(--accent)" stroke-width="1.2"/>
+                <path d="M12 9v6m-3-3l3 3 3-3" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="lv-info">
+              <span class="lv-name">foto_original.jpg</span>
+              <span class="lv-size">2.4 MB</span>
+            </div>
+            <span class="lv-status-icon">○</span>
+          </div>
+          <div class="lv-item lv-converting">
+            <div class="lv-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                <rect x="4" y="4" width="16" height="20" rx="2" fill="var(--card-bg)" stroke="var(--accent)" stroke-width="1.2"/>
+                <text x="12" y="15" font-size="7" font-weight="700" text-anchor="middle" fill="var(--accent)">PDF</text>
+              </svg>
+            </div>
+            <div class="lv-info">
+              <span class="lv-name">informe.pdf</span>
+              <span class="lv-size">→ 3 páginas</span>
+            </div>
+            <span class="lv-badge-converting" data-i18n="statusConverting">Procesando...</span>
+          </div>
+          <div class="lv-item lv-done">
+            <div class="lv-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg">
+                <rect x="4" y="4" width="16" height="20" rx="2" fill="var(--card-bg)" stroke="var(--green)" stroke-width="1.2"/>
+                <circle cx="12" cy="12" r="3.5" fill="none" stroke="var(--green)" stroke-width="1.2"/>
+                <path d="M10 12l1.5 1.5 3-3" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="lv-info">
+              <span class="lv-name">informe_p1.png</span>
+              <span class="lv-size"><span class="lv-check">✓</span> Listo</span>
+            </div>
+            <button class="lv-dl-btn" aria-label="Descargar">↓</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TRUST BAR -->
+    <section class="landing-trust">
+      <div class="trust-item">
+        <span class="trust-icon" aria-hidden="true">
+          <svg viewBox="0 0 20 20" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="2" width="12" height="16" rx="2" fill="none" stroke="var(--green)" stroke-width="1.5"/>
+            <path d="M7 10l2 2 4-4" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="trust-text" data-i18n="trustLocal">100% local — nada se sube a un servidor</span>
+      </div>
+      <div class="trust-item">
+        <span class="trust-icon" aria-hidden="true">
+          <svg viewBox="0 0 20 20" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 4v6l4 2" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="10" cy="10" r="7" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+          </svg>
+        </span>
+        <span class="trust-text" data-i18n="trustOffline">Funciona sin conexión una vez cargado</span>
+      </div>
+      <div class="trust-item">
+        <span class="trust-icon" aria-hidden="true">
+          <svg viewBox="0 0 20 20" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 10h14M10 3v14" fill="none" stroke="var(--orange)" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="trust-text" data-i18n="trustUnlimited">Sin límite artificial de archivos</span>
+      </div>
+      <div class="trust-item">
+        <span class="trust-icon" aria-hidden="true">
+          <svg viewBox="0 0 20 20" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="10" cy="10" r="7" fill="none" stroke="var(--purple)" stroke-width="1.5"/>
+            <path d="M7 7l6 6M13 7l-6 6" fill="none" stroke="var(--purple)" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="trust-text" data-i18n="trustNoAccount">Sin cuenta, sin registro</span>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="landing-how" id="landing-how">
+      <h2 class="landing-section-title" data-i18n="howTitle">Cómo funciona</h2>
+      <div class="carousel" id="landing-carousel">
+        <div class="carousel-steps" id="carousel-steps" role="list" aria-label="Pasos"></div>
+      </div>
+    </section>
+
+    <!-- TOOLS GRID -->
+    <section class="landing-tools">
+      <h2 class="landing-section-title" data-i18n="toolsTitle">Herramientas disponibles</h2>
+      <div class="tools-grid">
+        <div class="tool-card" data-color="hot">
+          <div class="tool-card-icon" data-icon="img" aria-hidden="true"></div>
+          <div class="tool-card-info">
+            <span class="tool-card-name" data-i18n="convImages">Imágenes</span>
+            <span class="tool-card-desc" data-i18n="imgSubtitle">Convertí entre formatos de imagen sin pérdida de calidad</span>
+          </div>
+        </div>
+        <div class="tool-card" data-color="cold">
+          <div class="tool-card-icon" data-icon="pdf2img" aria-hidden="true"></div>
+          <div class="tool-card-info">
+            <span class="tool-card-name" data-i18n="convPdf2img">PDF → Img</span>
+            <span class="tool-card-desc" data-i18n="pdfSubtitle">Extraé cada página del PDF como imagen de alta resolución</span>
+          </div>
+        </div>
+        <div class="tool-card" data-color="ok">
+          <div class="tool-card-icon" data-icon="word2pdf" aria-hidden="true"></div>
+          <div class="tool-card-info">
+            <span class="tool-card-name" data-i18n="convWord2pdf">Word → PDF</span>
+            <span class="tool-card-desc" data-i18n="wordSubtitle">Convertí el contenido de tu .docx a PDF</span>
+          </div>
+        </div>
+        <div class="tool-card" data-color="warn">
+          <div class="tool-card-icon" data-icon="vid2gif" aria-hidden="true"></div>
+          <div class="tool-card-info">
+            <span class="tool-card-name" data-i18n="convVid2gif">Video → GIF</span>
+            <span class="tool-card-desc" data-i18n="vidSubtitle">Convertí fragmentos de video en GIFs animados</span>
+          </div>
+        </div>
+        <div class="tool-card" data-color="purple">
+          <div class="tool-card-icon" data-icon="bgremove" aria-hidden="true"></div>
+          <div class="tool-card-info">
+            <span class="tool-card-name" data-i18n="convBgRemove">Borrar Fondo</span>
+            <span class="tool-card-desc" data-i18n="bgSubtitle">Eliminá el fondo de imágenes automáticamente</span>
+          </div>
+        </div>
+        <div class="tool-card" data-color="pink">
+          <div class="tool-card-icon" data-icon="urldown" aria-hidden="true"></div>
+          <div class="tool-card-info">
+            <span class="tool-card-name" data-i18n="convUrldown">Descargar URL</span>
+            <span class="tool-card-desc" data-i18n="urlSubtitle">Descargá imágenes o videos directamente desde un link</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="landing-footer">
+      <p class="landing-footer-text"><span data-i18n="landingPrivacy">Procesamiento local de archivos. Sin servidores, sin registro.</span></p>
+      <nav class="landing-footer-links">
+        <a href="#landing-how" data-i18n="navHelp">Ayuda</a>
+        <a href="https://github.com/anomalyco/convrt" target="_blank" rel="noopener" data-i18n="landingSource">Código fuente</a>
+      </nav>
+    </footer>
+
+  </main>
+
+  <!-- CTA -->
+  <div class="landing-cta-wrap">
+    <button class="landing-btn btn-enter" data-i18n="enterBtn">Entrar a la app</button>
+  </div>
+
+</section>
+
+<!-- ═══════════════ APP SHELL ═══════════════ -->
+<div class="screen" id="screen-app" aria-label="Aplicación">
+
+<div class="app-shell">
+
+  <!-- HEADERBAR -->
+  <header class="headerbar" role="banner">
+    <button class="nav-burger" id="nav-burger" aria-label="Abrir menú lateral" aria-expanded="false">☰</button>
+    <div class="headerbar-left">
+      <button class="nav-arrow" id="nav-back" aria-label="Navegar atrás" disabled>‹</button>
+      <button class="nav-arrow" id="nav-forward" aria-label="Navegar adelante" disabled>›</button>
+    </div>
+    <nav class="breadcrumb" id="breadcrumb" aria-label="Ruta de navegación">
+      <span class="bc-segment bc-home" aria-hidden="true">🏠</span>
+      <span class="bc-sep" aria-hidden="true">/</span>
+      <span class="bc-segment bc-current">Imágenes</span>
+    </nav>
+    <div class="headerbar-right">
+      <button class="headerbar-icon" id="view-toggle" aria-label="Cambiar entre vista cuadrícula y lista" aria-pressed="false">⊞</button>
+      <button class="headerbar-icon" id="menu-btn" aria-label="Abrir menú de opciones" aria-haspopup="true">⋮</button>
+    </div>
+  </header>
+
+  <!-- MAIN LAYOUT -->
+  <div class="main-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar" aria-label="Barra lateral de herramientas">
+      <nav class="sidebar-section" aria-label="Herramientas de conversión">
+        <h2 class="sidebar-section-label">Herramientas</h2>
+        <button class="sidebar-item active" data-panel="img" data-color="hot" role="tab" aria-selected="true">
+          <span class="sidebar-icon" data-icon="img" aria-hidden="true"></span>
+          <span class="sidebar-label" data-i18n="convImages">Imágenes</span>
+          <span class="sidebar-shortcut" aria-label="Atajo de teclado: 1">1</span>
+        </button>
+        <button class="sidebar-item" data-panel="pdf2img" data-color="cold" role="tab" aria-selected="false">
+          <span class="sidebar-icon" data-icon="pdf2img" aria-hidden="true"></span>
+          <span class="sidebar-label" data-i18n="convPdf2img">PDF → Img</span>
+          <span class="sidebar-shortcut" aria-label="Atajo de teclado: 2">2</span>
+        </button>
+        <button class="sidebar-item" data-panel="word2pdf" data-color="ok" role="tab" aria-selected="false">
+          <span class="sidebar-icon" data-icon="word2pdf" aria-hidden="true"></span>
+          <span class="sidebar-label" data-i18n="convWord2pdf">Word → PDF</span>
+          <span class="sidebar-shortcut" aria-label="Atajo de teclado: 3">3</span>
+        </button>
+        <button class="sidebar-item" data-panel="vid2gif" data-color="warn" role="tab" aria-selected="false">
+          <span class="sidebar-icon" data-icon="vid2gif" aria-hidden="true"></span>
+          <span class="sidebar-label" data-i18n="convVid2gif">Video → GIF</span>
+          <span class="sidebar-shortcut" aria-label="Atajo de teclado: 4">4</span>
+        </button>
+        <button class="sidebar-item" data-panel="bgremove" data-color="purple" role="tab" aria-selected="false">
+          <span class="sidebar-icon" data-icon="bgremove" aria-hidden="true"></span>
+          <span class="sidebar-label" data-i18n="convBgRemove">Borrar Fondo</span>
+          <span class="sidebar-shortcut" aria-label="Atajo de teclado: 5">5</span>
+        </button>
+        <button class="sidebar-item" data-panel="urldown" data-color="pink" role="tab" aria-selected="false">
+          <span class="sidebar-icon" data-icon="urldown" aria-hidden="true"></span>
+          <span class="sidebar-label" data-i18n="convUrldown">Descargar URL</span>
+          <span class="sidebar-shortcut" aria-label="Atajo de teclado: 6">6</span>
+        </button>
+      </nav>
+      <nav class="sidebar-section" aria-label="Sistema">
+        <h2 class="sidebar-section-label">Sistema</h2>
+        <button class="sidebar-item" data-page="settings">
+          <span class="sidebar-icon" aria-hidden="true">⚙</span>
+          <span class="sidebar-label" data-i18n="navSettings">Config</span>
+        </button>
+        <button class="sidebar-item" data-page="faq">
+          <span class="sidebar-icon" aria-hidden="true">?</span>
+          <span class="sidebar-label" data-i18n="navHelp">Ayuda</span>
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <span class="sidebar-footer-text">Caché local: <span class="cache-count">0</span> archivos · <span class="cache-size">0 KB</span></span>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="content" id="main-content" role="main">
+
+      <!-- PAGE: CONVERTER -->
+      <section class="app-page active" id="page-converter" role="tabpanel" aria-label="Convertir archivos">
+
+        <!-- IMÁGENES -->
+        <article class="panel-card">
+        <div class="panel active" id="panel-img" data-color="hot" role="tabpanel" aria-label="Conversor de imágenes">
+          <header class="panel-header">
+            <div class="panel-title-wrap">
+              <h2 class="panel-title">IMG <span class="arrow" aria-hidden="true">→</span> IMG</h2>
+              <p class="panel-subtitle" data-i18n="imgSubtitle">Convertí entre formatos de imagen sin pérdida de calidad</p>
+            </div>
+            <div class="panel-badges">
+              <span class="badge">JPG</span><span class="badge">PNG</span>
+              <span class="badge">WEBP</span><span class="badge badge-accent">→ elegí abajo</span>
+            </div>
+          </header>
+          <div class="panel-body">
+            <div class="format-selector">
+              <span class="format-label" data-i18n="convertTo">Convertir a →</span>
+              <div class="format-options" role="radiogroup" aria-label="Formato de salida">
+                <button class="fmt-opt selected" data-tool="img" data-fmt="png" role="radio" aria-checked="true">PNG</button>
+                <button class="fmt-opt" data-tool="img" data-fmt="jpeg" role="radio" aria-checked="false">JPG</button>
+                <button class="fmt-opt" data-tool="img" data-fmt="webp" role="radio" aria-checked="false">WEBP</button>
+                <button class="fmt-opt" data-tool="img" data-fmt="bmp" role="radio" aria-checked="false">BMP</button>
+              </div>
+            </div>
+            <div class="drop-zone" data-tool="img" role="button" tabindex="0" aria-label="Área para soltar archivos de imagen">
+              <input type="file" data-tool="img" multiple accept="image/*" aria-label="Seleccionar archivos de imagen"/>
+              <div class="drop-icon" aria-hidden="true">🖼</div>
+              <div class="drop-main" data-i18n="dropMain">Arrastrá o hacé clic</div>
+              <div class="drop-sub" data-i18n="dropSub">Múltiples archivos soportados</div>
+              <span class="drop-types">JPG · PNG · WEBP · BMP · GIF</span>
+            </div>
+            <div class="file-grid grid-view" id="files-img" role="list" aria-label="Archivos cargados"></div>
+            <div class="file-list" id="files-list-img" style="display:none;" aria-hidden="true"></div>
+            <div class="empty-state" id="empty-img" aria-label="Sin archivos cargados">
+              <div class="empty-icon" aria-hidden="true">🖼</div>
+              <p class="empty-text" data-i18n="emptyFiles">Soltá archivos acá para empezar</p>
+              <p class="empty-hint" data-i18n="emptyFilesHint">O hacé clic en el área de arriba</p>
+            </div>
+            <div class="progress-wrap" id="progress-img" role="progressbar" aria-label="Progreso de conversión">
+              <div class="progress-label"><span id="progress-img-lbl" data-i18n="converting">Convirtiendo...</span><span id="progress-img-pct">0%</span></div>
+              <div class="progress-bar"><div class="progress-fill" id="progress-img-fill"></div></div>
+            </div>
+            <div class="notice" id="notice-img" aria-live="polite"><strong>Procesamiento local</strong> — Tus archivos nunca salen de tu navegador.</div>
+            <footer class="action-bar">
+              <button class="btn-convert" id="btn-img" data-tool="img" disabled data-i18n="btnConvert">Convertir</button>
+              <button class="btn-clear" data-tool="img"><span class="btn-clear-label" data-i18n="btnClear">Limpiar</span></button>
+              <span class="file-count" id="count-img">0 archivos</span>
+            </footer>
+          </div>
+        </div>
+        </article>
+
+        <!-- PDF → IMAGEN -->
+        <article class="panel-card" style="margin-top:0.75rem;">
+        <div class="panel" id="panel-pdf2img" data-color="cold" role="tabpanel" aria-label="Conversor de PDF a imagen">
+          <header class="panel-header">
+            <div class="panel-title-wrap">
+              <h2 class="panel-title">PDF <span class="arrow" aria-hidden="true">→</span> IMG</h2>
+              <p class="panel-subtitle" data-i18n="pdfSubtitle">Extraé cada página del PDF como imagen de alta resolución</p>
+            </div>
+            <div class="panel-badges"><span class="badge">PDF</span><span class="badge badge-accent">→ PNG / JPG</span></div>
+          </header>
+          <div class="panel-body">
+            <div class="format-selector">
+              <span class="format-label" data-i18n="outputFmt">Formato de salida →</span>
+              <div class="format-options" role="radiogroup" aria-label="Formato de salida">
+                <button class="fmt-opt selected" data-tool="pdf2img" data-fmt="png" role="radio" aria-checked="true">PNG</button>
+                <button class="fmt-opt" data-tool="pdf2img" data-fmt="jpeg" role="radio" aria-checked="false">JPG</button>
+              </div>
+            </div>
+            <div class="drop-zone" data-tool="pdf2img" role="button" tabindex="0" aria-label="Área para soltar archivos PDF">
+              <input type="file" data-tool="pdf2img" multiple accept=".pdf" aria-label="Seleccionar archivos PDF"/>
+              <div class="drop-icon" aria-hidden="true">📄</div>
+              <div class="drop-main" data-i18n="dropMain">Arrastrá o hacé clic</div>
+              <div class="drop-sub" data-i18n="dropSub">Múltiples archivos soportados</div>
+              <span class="drop-types">Solo PDF</span>
+            </div>
+            <div class="file-grid grid-view" id="files-pdf2img" role="list" aria-label="Archivos cargados"></div>
+            <div class="file-list" id="files-list-pdf2img" style="display:none;" aria-hidden="true"></div>
+            <div class="empty-state" id="empty-pdf2img" aria-label="Sin archivos cargados">
+              <div class="empty-icon" aria-hidden="true">📄</div>
+              <p class="empty-text" data-i18n="emptyFilesPdf">Soltá archivos PDF acá</p>
+            </div>
+            <div class="progress-wrap" id="progress-pdf2img" role="progressbar" aria-label="Progreso de conversión">
+              <div class="progress-label"><span id="progress-pdf2img-lbl">Procesando PDF...</span><span id="progress-pdf2img-pct">0%</span></div>
+              <div class="progress-bar"><div class="progress-fill" id="progress-pdf2img-fill"></div></div>
+            </div>
+            <div class="notice" id="notice-pdf" aria-live="polite"><strong>PDF.js</strong> — Renderizado directo en el navegador. Sin servidores.</div>
+            <footer class="action-bar">
+              <button class="btn-convert" id="btn-pdf2img" data-tool="pdf2img" disabled data-i18n="btnConvert">Convertir</button>
+              <button class="btn-clear" data-tool="pdf2img"><span class="btn-clear-label" data-i18n="btnClear">Limpiar</span></button>
+              <span class="file-count" id="count-pdf2img">0 archivos</span>
+            </footer>
+          </div>
+        </div>
+        </article>
+
+        <!-- WORD → PDF -->
+        <article class="panel-card" style="margin-top:0.75rem;">
+        <div class="panel" id="panel-word2pdf" data-color="ok" role="tabpanel" aria-label="Conversor de Word a PDF">
+          <header class="panel-header">
+            <div class="panel-title-wrap">
+              <h2 class="panel-title">WORD <span class="arrow" aria-hidden="true">→</span> PDF</h2>
+              <p class="panel-subtitle" data-i18n="wordSubtitle">Convertí el contenido de tu .docx a PDF (texto, títulos e imágenes — sin layout exacto)</p>
+            </div>
+            <div class="panel-badges"><span class="badge">DOCX</span><span class="badge badge-accent">→ PDF</span></div>
+          </header>
+          <div class="panel-body">
+            <div class="drop-zone" data-tool="word2pdf" role="button" tabindex="0" aria-label="Área para soltar archivos DOCX">
+              <input type="file" data-tool="word2pdf" multiple accept=".docx" aria-label="Seleccionar archivos DOCX"/>
+              <div class="drop-icon" aria-hidden="true">📝</div>
+              <div class="drop-main" data-i18n="dropMain">Arrastrá o hacé clic</div>
+              <div class="drop-sub" data-i18n="dropSub">Múltiples archivos soportados</div>
+              <span class="drop-types">Solo .docx</span>
+            </div>
+            <div class="file-grid grid-view" id="files-word2pdf" role="list" aria-label="Archivos cargados"></div>
+            <div class="file-list" id="files-list-word2pdf" style="display:none;" aria-hidden="true"></div>
+            <div class="empty-state" id="empty-word2pdf" aria-label="Sin archivos cargados">
+              <div class="empty-icon" aria-hidden="true">📝</div>
+              <p class="empty-text" data-i18n="emptyFilesDocx">Soltá archivos .docx acá</p>
+            </div>
+            <div class="progress-wrap" id="progress-word2pdf" role="progressbar" aria-label="Progreso">
+              <div class="progress-label"><span id="progress-word2pdf-lbl">Procesando...</span><span id="progress-word2pdf-pct">0%</span></div>
+              <div class="progress-bar"><div class="progress-fill" id="progress-word2pdf-fill"></div></div>
+            </div>
+            <div class="notice warn" id="notice-word" aria-live="polite"><strong>Nota:</strong> Se abrirá el diálogo de impresión. Elegí <strong>"Guardar como PDF"</strong> como destino.</div>
+            <footer class="action-bar">
+              <button class="btn-convert" id="btn-word2pdf" data-tool="word2pdf" disabled data-i18n="btnConvert">Convertir</button>
+              <button class="btn-clear" data-tool="word2pdf"><span class="btn-clear-label" data-i18n="btnClear">Limpiar</span></button>
+              <span class="file-count" id="count-word2pdf">0 archivos</span>
+            </footer>
+          </div>
+        </div>
+        </article>
+
+        <!-- VIDEO → GIF -->
+        <article class="panel-card" style="margin-top:0.75rem;">
+        <div class="panel" id="panel-vid2gif" data-color="warn" role="tabpanel" aria-label="Conversor de video a GIF">
+          <header class="panel-header">
+            <div class="panel-title-wrap">
+              <h2 class="panel-title">VIDEO <span class="arrow" aria-hidden="true">→</span> GIF</h2>
+              <p class="panel-subtitle" data-i18n="vidSubtitle">Convertí fragmentos de video en GIFs animados</p>
+            </div>
+            <div class="panel-badges"><span class="badge">MP4</span><span class="badge">WEBM</span><span class="badge badge-accent">→ GIF</span></div>
+          </header>
+          <div class="panel-body">
+            <div class="gif-options">
+              <div class="gif-opt-group">
+                <label class="gif-opt-label" for="gif-start" data-i18n="gifStart">Inicio (seg)</label>
+                <input class="gif-input" type="number" id="gif-start" value="0" min="0" step="0.5"/>
+              </div>
+              <div class="gif-opt-group">
+                <label class="gif-opt-label" for="gif-duration" data-i18n="gifDuration">Duración (seg)</label>
+                <input class="gif-input" type="number" id="gif-duration" value="3" min="0.5" max="15" step="0.5"/>
+              </div>
+              <div class="gif-opt-group">
+                <label class="gif-opt-label" for="gif-fps" data-i18n="gifFps">FPS</label>
+                <input class="gif-input" type="number" id="gif-fps" value="10" min="5" max="24" step="1"/>
+              </div>
+              <div class="gif-opt-group">
+                <label class="gif-opt-label" for="gif-width" data-i18n="gifWidth">Ancho (px)</label>
+                <input class="gif-input" type="number" id="gif-width" value="480" min="100" max="1280" step="10"/>
+              </div>
+            </div>
+            <div class="drop-zone" data-tool="vid2gif" role="button" tabindex="0" aria-label="Área para soltar archivos de video">
+              <input type="file" data-tool="vid2gif" accept="video/*" aria-label="Seleccionar archivo de video"/>
+              <div class="drop-icon" aria-hidden="true">🎬</div>
+              <div class="drop-main" data-i18n="dropMain">Arrastrá o hacé clic</div>
+              <div class="drop-sub" data-i18n="dropSubSingle">Un video a la vez</div>
+              <span class="drop-types">MP4 · WEBM · MOV</span>
+              <div class="gif-size-estimate" id="gif-size-estimate"></div>
+            </div>
+            <div id="vid-preview-wrap" style="display:none;" aria-label="Previsualización de video">
+              <video id="vid-preview" controls aria-label="Video seleccionado" style="max-width:100%;max-height:200px;background:#000;display:block;border-radius:var(--radius-sm);"></video>
+            </div>
+            <div class="file-grid grid-view" id="files-vid2gif" role="list" aria-label="Archivos cargados"></div>
+            <div class="file-list" id="files-list-vid2gif" style="display:none;" aria-hidden="true"></div>
+            <div class="empty-state" id="empty-vid2gif" aria-label="Sin video cargado">
+              <div class="empty-icon" aria-hidden="true">🎬</div>
+              <p class="empty-text" data-i18n="emptyVideo">Arrastrá un video acá para empezar</p>
+            </div>
+            <div class="progress-wrap" id="progress-vid2gif" role="progressbar" aria-label="Progreso de generación">
+              <div class="progress-label"><span id="progress-vid2gif-lbl">Generando GIF...</span><span id="progress-vid2gif-pct">0%</span></div>
+              <div class="progress-bar"><div class="progress-fill" id="progress-vid2gif-fill"></div></div>
+            </div>
+            <div id="gif-result" style="display:none;" aria-label="GIF generado">
+              <img id="gif-output" style="max-width:100%;max-height:280px;display:inline-block;" alt="GIF generado"/>
+              <div style="margin-top:0.75rem;">
+                <button class="btn-convert" id="btn-dl-gif" style="background:var(--green);color:#000;" data-i18n="btnDownloadGif">Descargar GIF</button>
+              </div>
+            </div>
+            <div class="notice warn" id="notice-gif" aria-live="polite"><strong>Nota:</strong> GIFs generados mediante captura de frames. Para mejores resultados usá videos cortos (&lt; 10 seg).</div>
+            <footer class="action-bar">
+              <button class="btn-convert" id="btn-vid2gif" data-tool="vid2gif" disabled data-i18n="btnGenerateGif">Generar GIF</button>
+              <button class="btn-clear" data-tool="vid2gif"><span class="btn-clear-label" data-i18n="btnClear">Limpiar</span></button>
+              <span class="file-count" id="count-vid2gif">0 archivos</span>
+            </footer>
+          </div>
+        </div>
+        </article>
+
+        <!-- BORRAR FONDO -->
+        <article class="panel-card" style="margin-top:0.75rem;">
+        <div class="panel" id="panel-bgremove" data-color="purple" role="tabpanel" aria-label="Removedor de fondos">
+          <header class="panel-header">
+            <div class="panel-title-wrap">
+              <h2 class="panel-title">BORRAR <span class="arrow" aria-hidden="true">→</span> FONDO</h2>
+              <p class="panel-subtitle" data-i18n="bgSubtitle">Eliminá el fondo de imágenes automáticamente</p>
+            </div>
+            <div class="panel-badges"><span class="badge">JPG</span><span class="badge">PNG</span><span class="badge badge-accent">→ PNG transparente</span></div>
+          </header>
+          <div class="panel-body">
+            <div class="slider-row">
+              <label for="bg-tolerance" data-i18n="tolerance">Tolerancia</label>
+              <input type="range" id="bg-tolerance" min="5" max="80" value="30" aria-label="Tolerancia del algoritmo"/>
+              <span class="slider-val" id="tol-val" aria-live="polite">30</span>
+            </div>
+            <div class="drop-zone" data-tool="bgremove" role="button" tabindex="0" aria-label="Área para soltar imágenes">
+              <input type="file" data-tool="bgremove" multiple accept="image/*" aria-label="Seleccionar imágenes"/>
+              <div class="drop-icon" aria-hidden="true">✂️</div>
+              <div class="drop-main" data-i18n="dropMain">Arrastrá o hacé clic</div>
+              <div class="drop-sub" data-i18n="dropSubBg">Funciona mejor con fondos de color uniforme</div>
+              <span class="drop-types">JPG · PNG · WEBP</span>
+            </div>
+            <div class="file-grid grid-view" id="files-bgremove" role="list" aria-label="Archivos cargados"></div>
+            <div class="file-list" id="files-list-bgremove" style="display:none;" aria-hidden="true"></div>
+            <div class="empty-state" id="empty-bgremove" aria-label="Sin imágenes cargadas">
+              <div class="empty-icon" aria-hidden="true">✂️</div>
+              <p class="empty-text" data-i18n="emptyFiles">Soltá imágenes acá para empezar</p>
+            </div>
+            <div class="progress-wrap" id="progress-bgremove" role="progressbar" aria-label="Progreso">
+              <div class="progress-label"><span id="progress-bgremove-lbl">Procesando...</span><span id="progress-bgremove-pct">0%</span></div>
+              <div class="progress-bar"><div class="progress-fill" id="progress-bgremove-fill"></div></div>
+            </div>
+            <div class="bg-preview-grid" id="bg-previews" aria-label="Previsualizaciones"></div>
+            <div class="notice warn" id="notice-bg" aria-live="polite"><strong>Algoritmo local:</strong> Usa flood-fill desde el perímetro. Funciona mejor con fondos uniformes.</div>
+            <footer class="action-bar">
+              <button class="btn-convert" id="btn-bgremove" data-tool="bgremove" disabled data-i18n="btnRemoveBg">Borrar Fondo</button>
+              <button class="btn-clear" data-tool="bgremove"><span class="btn-clear-label" data-i18n="btnClear">Limpiar</span></button>
+              <span class="file-count" id="count-bgremove">0 archivos</span>
+            </footer>
+          </div>
+        </div>
+        </article>
+
+        <!-- DESCARGAR POR URL -->
+        <article class="panel-card" style="margin-top:0.75rem;">
+        <div class="panel" id="panel-urldown" data-color="pink" role="tabpanel" aria-label="Descargador por URL">
+          <header class="panel-header">
+            <div class="panel-title-wrap">
+              <h2 class="panel-title">URL <span class="arrow" aria-hidden="true">→</span> ARCHIVO</h2>
+              <p class="panel-subtitle" data-i18n="urlSubtitle">Descargá imágenes o videos directamente desde un link</p>
+            </div>
+            <div class="panel-badges"><span class="badge">IMG</span><span class="badge">VIDEO</span><span class="badge badge-accent">→ descarga directa</span></div>
+          </header>
+          <div class="panel-body">
+            <div class="notice" aria-live="polite">
+              <strong>Procesamiento local</strong> — Pegá la URL directa de una imagen o video y hacé clic en Cargar. Algunos sitios bloquean descargas externas por política CORS.
+            </div>
+            <div class="url-input-wrap">
+              <input class="url-input" type="url" id="url-input" data-i18n-placeholder="urlPlaceholder" placeholder="https://ejemplo.com/imagen.jpg" aria-label="URL del archivo"/>
+              <button class="url-fetch-btn" id="url-fetch-btn" data-i18n="urlFetchBtn" aria-label="Cargar desde URL">Cargar →</button>
+            </div>
+            <div class="url-cors-notice" id="url-cors-notice" data-i18n="urlCorsBlocked" role="alert">
+              Bloqueado por CORS — El servidor no permite descargas desde el navegador.
+            </div>
+            <div class="url-preview-box" id="url-preview-box" aria-label="Previsualización">
+              <div class="url-meta" id="url-meta"></div>
+              <div id="url-media-wrap"></div>
+              <div class="url-dl-bar">
+                <button class="url-dl-btn" id="url-dl-btn" data-i18n="btnDownload">↓ Descargar</button>
+                <span id="url-dl-status" style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--text-3);" aria-live="polite"></span>
+              </div>
+            </div>
+            <div class="url-history" id="url-history" aria-label="Historial de descargas">
+              <div class="url-history-header">
+                <div class="url-history-title" data-i18n="urlRecent">Recientes</div>
+                <button class="url-clear-btn" data-i18n="urlClear" aria-label="Borrar historial">Borrar historial</button>
+              </div>
+              <div id="url-history-list"></div>
+            </div>
+          </div>
+        </div>
+        </article>
+
+      </section>
+
+      <!-- PAGE: SETTINGS -->
+      <section class="app-page" id="page-settings" role="tabpanel" aria-label="Configuración">
+        <h2 class="settings-title" data-i18n="settingsTitle">Configuración</h2>
+        <p class="settings-sub" data-i18n="settingsSub">Personalizá el comportamiento de CONVRT</p>
+
+        <!-- GROUP: Quality -->
+        <div class="settings-group">
+          <h3 class="settings-group-title" data-i18n="settingsGrpQuality">Calidad de exportación</h3>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-name" data-i18n="settingJpgQualityName">Calidad JPG / WEBP</div>
+              <div class="setting-desc" data-i18n="settingJpgQualityDesc">Nivel de compresión (1–100)</div>
+            </div>
+            <div class="quality-slider">
+              <input type="range" id="cfg-quality" min="1" max="100" value="92" aria-label="Calidad JPG/WEBP"/>
+              <span class="quality-val" id="cfg-quality-val">92%</span>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-name" data-i18n="settingPdfScaleName">Escala PDF</div>
+              <div class="setting-desc" data-i18n="settingPdfScaleDesc">Resolución al convertir PDF a imagen</div>
+            </div>
+            <select class="setting-select" id="cfg-pdfscale" aria-label="Escala PDF">
+              <option value="1" data-i18n="settingPdfScale1">1x — Rápido</option>
+              <option value="2" selected data-i18n="settingPdfScale2">2x — Balanceado</option>
+              <option value="3" data-i18n="settingPdfScale3">3x — Alta calidad</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- GROUP: Interface -->
+        <div class="settings-group">
+          <h3 class="settings-group-title" data-i18n="settingsGrpUI">Interfaz</h3>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-name" data-i18n="settingLangName">Idioma</div>
+              <div class="setting-desc" data-i18n="settingLangDesc">Idioma de la interfaz</div>
+            </div>
+            <select class="setting-select" id="cfg-lang" aria-label="Idioma">
+              <option value="es">🇦🇷 Español</option>
+              <option value="en">🇺🇸 English</option>
+              <option value="pt">🇧🇷 Português</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-name" data-i18n="settingToastsName">Notificaciones</div>
+              <div class="setting-desc" data-i18n="settingToastsDesc">Mostrar toast al completar conversión</div>
+            </div>
+            <label class="toggle" aria-label="Notificaciones">
+              <input type="checkbox" id="cfg-toasts" checked/>
+              <span class="toggle-track"></span>
+              <span class="toggle-thumb"></span>
+            </label>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-name" data-i18n="settingAutoDlName">Descarga automática</div>
+              <div class="setting-desc" data-i18n="settingAutoDlDesc">Descargar archivos al finalizar</div>
+            </div>
+            <label class="toggle" aria-label="Descarga automática">
+              <input type="checkbox" id="cfg-autoDl"/>
+              <span class="toggle-track"></span>
+              <span class="toggle-thumb"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- GROUP: GIF -->
+        <div class="settings-group">
+          <h3 class="settings-group-title" data-i18n="settingsGrpGif">GIF</h3>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-name" data-i18n="settingGifFpsName">FPS por defecto</div>
+              <div class="setting-desc" data-i18n="settingGifFpsDesc">Frames por segundo al generar GIFs</div>
+            </div>
+            <select class="setting-select" id="cfg-gifFps" aria-label="FPS GIF">
+              <option value="5">5 fps</option>
+              <option value="10" selected>10 fps</option>
+              <option value="15">15 fps</option>
+              <option value="24">24 fps</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: FAQ -->
+      <section class="app-page" id="page-faq" role="tabpanel" aria-label="Ayuda y preguntas frecuentes">
+        <h2 class="faq-title" id="faq-title" data-i18n="faqTitle">Ayuda &amp; FAQ</h2>
+        <p class="faq-sub" id="faq-sub" data-i18n="faqSub">Preguntas frecuentes sobre el uso de CONVRT</p>
+        <div id="faq-container"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- STATUS BAR -->
+  <footer class="statusbar">
+    <span id="status-text">Procesamiento local — Tus archivos nunca salen de tu navegador</span>
+    <span class="status-indicators">
+      <span class="net-indicator" id="net-indicator" title="0 solicitudes de red durante esta sesión" aria-label="Contador de solicitudes de red">↕ <span id="net-count">0</span></span>
+      <span class="sw-indicator" id="sw-indicator" style="display:none;" aria-live="polite"></span>
+    </span>
+  </footer>
+
+</div>
+</div>
+
+<!-- ═══════════════ KEYBOARD SHORTCUTS OVERLAY ═══════════════ -->
+<div class="kbd-overlay" id="kbd-overlay" role="dialog" aria-modal="true" aria-label="Atajos de teclado" hidden>
+  <div class="kbd-panel">
+    <header class="kbd-header">
+      <h2 class="kbd-title" data-i18n="kbdTitle">Atajos de teclado</h2>
+      <button class="kbd-close" id="kbd-close" aria-label="Cerrar atajos">×</button>
+    </header>
+    <div class="kbd-body">
+      <div class="kbd-group">
+        <div class="kbd-group-title" data-i18n="kbdNav">Navegación</div>
+        <div class="kbd-row"><span class="kbd-key">1</span><span class="kbd-key">6</span><span class="kbd-desc" data-i18n="kbdTool">Abrir herramienta</span></div>
+        <div class="kbd-row"><span class="kbd-key">?</span><span class="kbd-desc" data-i18n="kbdToggle">Mostrar/ocultar atajos</span></div>
+      </div>
+      <div class="kbd-group">
+        <div class="kbd-group-title" data-i18n="kbdActions">Acciones</div>
+        <div class="kbd-row"><span class="kbd-key">Ctrl</span><span class="kbd-plus">+</span><span class="kbd-key">Enter</span><span class="kbd-desc" data-i18n="kbdConvert">Convertir archivos</span></div>
+        <div class="kbd-row"><span class="kbd-key">Esc</span><span class="kbd-desc" data-i18n="kbdClose">Cerrar panel/overlay</span></div>
+      </div>
+      <div class="kbd-group">
+        <div class="kbd-group-title" data-i18n="kbdGeneral">General</div>
+        <div class="kbd-row"><span class="kbd-key">F1</span><span class="kbd-desc" data-i18n="kbdHelp">Abrir Ayuda</span></div>
       </div>
     </div>
-    <div class="landing-cta">
-      <button class="btn-enter" onclick="enterApp()">
-        <span id="enter-btn-text">Entrar a la app</span>
-        <span class="arrow">→</span>
-      </button>
-      <p class="landing-note" id="landing-note-text">
-        <span class="ok">100% local</span><br>
-        tus archivos nunca se suben a ningún servidor
-      </p>
-    </div>
+    <footer class="kbd-footer">
+      <p class="kbd-hint"><span data-i18n="kbdHint">Presioná ? en cualquier momento para abrir esta ayuda</span></p>
+    </footer>
   </div>
 </div>
 
-<!-- ═══════════ APP ═══════════ -->
-<div class="screen" id="screen-app">
-
-  <header>
-    <div class="logo" onclick="goLanding()">CONV<span class="logo-accent">RT</span></div>
-    <div class="header-nav">
-      <button class="nav-btn active" id="nav-converter" onclick="switchAppPage('converter', this)">Convertir</button>
-      <button class="nav-btn" id="nav-settings" onclick="switchAppPage('settings', this)">Config</button>
-      <button class="nav-btn" id="nav-faq" onclick="switchAppPage('faq', this)">Ayuda</button>
+<!-- ═══════════════ INSTALL PROMPT ═══════════════ -->
+<div class="install-banner" id="install-banner" role="alert" hidden>
+  <div class="install-banner-content">
+    <div class="install-banner-icon" aria-hidden="true">⬇</div>
+    <div class="install-banner-text">
+      <strong data-i18n="installTitle">Instalá CONVRT</strong>
+      <span data-i18n="installDesc">Accedé sin conexión y más rápido</span>
     </div>
-    <div class="status-dot"><span id="status-dot-text">Listo</span></div>
-  </header>
-
-  <!-- CONVERTER -->
-  <div class="app-page active" id="page-converter">
-    <aside>
-      <div class="sidebar-title" id="sidebar-title">Conversiones</div>
-      <button class="conv-btn active" onclick="switchPanel('img', this)">
-        <span class="conv-icon">🖼</span>
-        <span id="conv-images-text">Imágenes</span>
-        <span class="conv-badge">JPG PNG WEBP</span>
-      </button>
-      <button class="conv-btn" onclick="switchPanel('pdf2img', this)">
-        <span class="conv-icon">📄</span>
-        <span id="conv-pdf2img-text">PDF → Img</span>
-        <span class="conv-badge">PDF</span>
-      </button>
-      <button class="conv-btn" onclick="switchPanel('word2pdf', this)">
-        <span class="conv-icon">📝</span>
-        <span id="conv-word2pdf-text">Word → PDF</span>
-        <span class="conv-badge">DOCX</span>
-      </button>
-      <button class="conv-btn" onclick="switchPanel('vid2gif', this)">
-        <span class="conv-icon">🎬</span>
-        <span id="conv-vid2gif-text">Video → GIF</span>
-        <span class="conv-badge">MP4 WEBM</span>
-      </button>
-      <button class="conv-btn" onclick="switchPanel('bgremove', this)">
-        <span class="conv-icon">✂️</span>
-        <span id="conv-bgremove-text">Borrar Fondo</span>
-        <span class="conv-badge">PNG JPG</span>
-      </button>
-      <button class="conv-btn" onclick="switchPanel('urldown', this)">
-        <span class="conv-icon">🔗</span>
-        <span id="conv-urldown-text">Descargar URL</span>
-        <span class="conv-badge">IMG VID</span>
-      </button>
-    </aside>
-
-    <div class="content">
-
-      <!-- IMÁGENES -->
-      <div class="panel active" id="panel-img">
-        <div class="panel-header">
-          <div>
-            <div class="panel-title">IMG <span class="arrow">→</span> IMG</div>
-            <div class="panel-subtitle" id="img-subtitle">Convertí entre formatos de imagen sin pérdida de calidad</div>
-          </div>
-          <div class="format-pills">
-            <span class="pill">JPG</span><span class="pill">PNG</span>
-            <span class="pill">WEBP</span><span class="pill hi">→ elegí abajo</span>
-          </div>
-        </div>
-        <div class="panel-body">
-          <div class="format-selector">
-            <span class="format-label format-label-to">Convertir a →</span>
-            <div class="format-options">
-              <button class="fmt-opt selected" onclick="selectFmt('img','png',this)">PNG</button>
-              <button class="fmt-opt" onclick="selectFmt('img','jpeg',this)">JPG</button>
-              <button class="fmt-opt" onclick="selectFmt('img','webp',this)">WEBP</button>
-              <button class="fmt-opt" onclick="selectFmt('img','bmp',this)">BMP</button>
-            </div>
-          </div>
-          <div class="drop-zone" onclick="document.getElementById('input-img').click()"
-            ondragover="handleDragOver(event,this)" ondragleave="handleDragLeave(this)" ondrop="handleDrop(event,'img')">
-            <input type="file" id="input-img" multiple accept="image/*" onchange="handleFiles(this.files,'img')"/>
-            <span class="drop-icon">⬡</span>
-            <div class="drop-main">Arrastrá o hacé clic</div>
-            <div class="drop-sub" id="drop-sub-img">Múltiples archivos soportados</div>
-            <span class="drop-types">JPG · PNG · WEBP · BMP · GIF</span>
-          </div>
-          <div class="file-list" id="files-img"></div>
-          <div class="progress-wrap" id="progress-img">
-            <div class="progress-label"><span id="progress-img-lbl">Convirtiendo...</span><span id="progress-img-pct">0%</span></div>
-            <div class="progress-bar"><div class="progress-fill" id="progress-img-fill"></div></div>
-          </div>
-          <div class="notice" id="notice-img"><strong>Procesamiento local</strong> — Tus archivos nunca salen de tu navegador.</div>
-          <div class="action-bar">
-            <button class="btn-convert btn-convert-img" id="btn-img" onclick="convertImages()" disabled>Convertir</button>
-            <button class="btn-clear" onclick="clearFiles('img')"><span class="btn-clear-label">Limpiar</span></button>
-            <span class="file-count" id="count-img">0 archivos</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- PDF → IMAGEN -->
-      <div class="panel" id="panel-pdf2img">
-        <div class="panel-header">
-          <div>
-            <div class="panel-title">PDF <span class="arrow">→</span> IMG</div>
-            <div class="panel-subtitle" id="pdf-subtitle">Extraé cada página del PDF como imagen de alta resolución</div>
-          </div>
-          <div class="format-pills"><span class="pill">PDF</span><span class="pill hi">→ PNG / JPG</span></div>
-        </div>
-        <div class="panel-body">
-          <div class="format-selector">
-            <span class="format-label" id="format-label-pdf">Formato de salida →</span>
-            <div class="format-options">
-              <button class="fmt-opt selected" onclick="selectFmt('pdf2img','png',this)">PNG</button>
-              <button class="fmt-opt" onclick="selectFmt('pdf2img','jpeg',this)">JPG</button>
-            </div>
-          </div>
-          <div class="drop-zone" onclick="document.getElementById('input-pdf2img').click()"
-            ondragover="handleDragOver(event,this)" ondragleave="handleDragLeave(this)" ondrop="handleDrop(event,'pdf2img')">
-            <input type="file" id="input-pdf2img" multiple accept=".pdf" onchange="handleFiles(this.files,'pdf2img')"/>
-            <span class="drop-icon">◈</span>
-            <div class="drop-main">Arrastrá o hacé clic</div>
-            <div class="drop-sub" id="drop-sub-pdf">Múltiples archivos soportados</div>
-            <span class="drop-types">Solo PDF</span>
-          </div>
-          <div class="file-list" id="files-pdf2img"></div>
-          <div class="progress-wrap" id="progress-pdf2img">
-            <div class="progress-label"><span id="progress-pdf2img-lbl">Procesando PDF...</span><span id="progress-pdf2img-pct">0%</span></div>
-            <div class="progress-bar"><div class="progress-fill" id="progress-pdf2img-fill"></div></div>
-          </div>
-          <div class="notice" id="notice-pdf"><strong>PDF.js</strong> — Renderizado directo en el navegador. Sin servidores.</div>
-          <div class="action-bar">
-            <button class="btn-convert btn-convert-img" id="btn-pdf2img" onclick="convertPdfToImg()" disabled>Convertir</button>
-            <button class="btn-clear" onclick="clearFiles('pdf2img')"><span class="btn-clear-label">Limpiar</span></button>
-            <span class="file-count" id="count-pdf2img">0 archivos</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- WORD → PDF -->
-      <div class="panel" id="panel-word2pdf">
-        <div class="panel-header">
-          <div>
-            <div class="panel-title">WORD <span class="arrow">→</span> PDF</div>
-            <div class="panel-subtitle" id="word-subtitle">Convertí documentos .docx preservando el formato</div>
-          </div>
-          <div class="format-pills"><span class="pill">DOCX</span><span class="pill hi">→ PDF</span></div>
-        </div>
-        <div class="panel-body">
-          <div class="drop-zone" onclick="document.getElementById('input-word2pdf').click()"
-            ondragover="handleDragOver(event,this)" ondragleave="handleDragLeave(this)" ondrop="handleDrop(event,'word2pdf')">
-            <input type="file" id="input-word2pdf" multiple accept=".docx" onchange="handleFiles(this.files,'word2pdf')"/>
-            <span class="drop-icon">▲</span>
-            <div class="drop-main">Arrastrá o hacé clic</div>
-            <div class="drop-sub" id="drop-sub-word">Múltiples archivos soportados</div>
-            <span class="drop-types">Solo .docx</span>
-          </div>
-          <div class="file-list" id="files-word2pdf"></div>
-          <div class="progress-wrap" id="progress-word2pdf">
-            <div class="progress-label"><span id="progress-word2pdf-lbl">Procesando...</span><span id="progress-word2pdf-pct">0%</span></div>
-            <div class="progress-bar"><div class="progress-fill" id="progress-word2pdf-fill"></div></div>
-          </div>
-          <div class="notice warn" id="notice-word"><strong>Nota:</strong> Se abrirá el diálogo de impresión. Elegí <strong>"Guardar como PDF"</strong> como destino.</div>
-          <div class="action-bar">
-            <button class="btn-convert btn-convert-img" id="btn-word2pdf" onclick="convertWordToPdf()" disabled>Convertir</button>
-            <button class="btn-clear" onclick="clearFiles('word2pdf')"><span class="btn-clear-label">Limpiar</span></button>
-            <span class="file-count" id="count-word2pdf">0 archivos</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- VIDEO → GIF -->
-      <div class="panel" id="panel-vid2gif">
-        <div class="panel-header">
-          <div>
-            <div class="panel-title">VIDEO <span class="arrow">→</span> GIF</div>
-            <div class="panel-subtitle" id="vid-subtitle">Convertí fragmentos de video en GIFs animados</div>
-          </div>
-          <div class="format-pills"><span class="pill">MP4</span><span class="pill">WEBM</span><span class="pill hi">→ GIF</span></div>
-        </div>
-        <div class="panel-body">
-          <div class="gif-options">
-            <div class="gif-opt-group">
-              <span class="gif-opt-label" id="gif-label-start">Inicio (seg)</span>
-              <input class="gif-input" type="number" id="gif-start" value="0" min="0" step="0.5"/>
-            </div>
-            <div class="gif-opt-group">
-              <span class="gif-opt-label" id="gif-label-duration">Duración (seg)</span>
-              <input class="gif-input" type="number" id="gif-duration" value="3" min="0.5" max="15" step="0.5"/>
-            </div>
-            <div class="gif-opt-group">
-              <span class="gif-opt-label" id="gif-label-fps">FPS</span>
-              <input class="gif-input" type="number" id="gif-fps" value="10" min="5" max="24" step="1"/>
-            </div>
-            <div class="gif-opt-group">
-              <span class="gif-opt-label" id="gif-label-width">Ancho (px)</span>
-              <input class="gif-input" type="number" id="gif-width" value="480" min="100" max="1280" step="10"/>
-            </div>
-          </div>
-          <div class="drop-zone" onclick="document.getElementById('input-vid2gif').click()"
-            ondragover="handleDragOver(event,this)" ondragleave="handleDragLeave(this)" ondrop="handleDrop(event,'vid2gif')">
-            <input type="file" id="input-vid2gif" accept="video/*" onchange="handleFiles(this.files,'vid2gif')"/>
-            <span class="drop-icon">🎬</span>
-            <div class="drop-main">Arrastrá o hacé clic</div>
-            <div class="drop-sub" id="drop-sub-vid">Un video a la vez</div>
-            <span class="drop-types">MP4 · WEBM · MOV</span>
-          </div>
-          <div id="vid-preview-wrap" style="display:none;">
-            <video id="vid-preview" controls style="max-width:100%;max-height:200px;background:#000;display:block;"></video>
-          </div>
-          <div class="file-list" id="files-vid2gif"></div>
-          <div class="progress-wrap" id="progress-vid2gif">
-            <div class="progress-label"><span id="progress-vid2gif-lbl">Generando GIF...</span><span id="progress-vid2gif-pct">0%</span></div>
-            <div class="progress-bar"><div class="progress-fill" id="progress-vid2gif-fill"></div></div>
-          </div>
-          <div id="gif-result" style="display:none;text-align:center;">
-            <img id="gif-output" style="max-width:100%;max-height:280px;border:1px solid var(--border);display:inline-block;" alt="GIF"/>
-            <div style="margin-top:0.75rem;">
-              <button class="btn-convert" onclick="downloadGif()"><span id="btn-dl-gif-text">Descargar GIF</span></button>
-            </div>
-          </div>
-          <div class="notice warn" id="notice-gif"><strong>Nota:</strong> GIFs generados mediante captura de frames. Para mejores resultados usá videos cortos.</div>
-          <div class="action-bar">
-            <button class="btn-convert" id="btn-vid2gif" onclick="convertVideoToGif()" disabled>Generar GIF</button>
-            <button class="btn-clear" onclick="clearVid()"><span class="btn-clear-label">Limpiar</span></button>
-            <span class="file-count" id="count-vid2gif">0 archivos</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- BORRAR FONDO -->
-      <div class="panel" id="panel-bgremove">
-        <div class="panel-header">
-          <div>
-            <div class="panel-title">BORRAR <span class="arrow">→</span> FONDO</div>
-            <div class="panel-subtitle" id="bg-subtitle">Eliminá el fondo de imágenes automáticamente</div>
-          </div>
-          <div class="format-pills"><span class="pill">JPG</span><span class="pill">PNG</span><span class="pill hi">→ PNG transparente</span></div>
-        </div>
-        <div class="panel-body">
-          <div class="slider-row">
-            <label id="tolerance-label">Tolerancia</label>
-            <input type="range" id="bg-tolerance" min="5" max="80" value="30"
-              oninput="document.getElementById('tol-val').textContent=this.value"/>
-            <span class="slider-val" id="tol-val">30</span>
-          </div>
-          <div class="drop-zone" onclick="document.getElementById('input-bgremove').click()"
-            ondragover="handleDragOver(event,this)" ondragleave="handleDragLeave(this)" ondrop="handleDrop(event,'bgremove')">
-            <input type="file" id="input-bgremove" multiple accept="image/*" onchange="handleFiles(this.files,'bgremove')"/>
-            <span class="drop-icon">✂</span>
-            <div class="drop-main">Arrastrá o hacé clic</div>
-            <div class="drop-sub" id="drop-sub-bg">Funciona mejor con fondos de color uniforme</div>
-            <span class="drop-types">JPG · PNG · WEBP</span>
-          </div>
-          <div class="file-list" id="files-bgremove"></div>
-          <div class="progress-wrap" id="progress-bgremove">
-            <div class="progress-label"><span id="progress-bgremove-lbl">Procesando...</span><span id="progress-bgremove-pct">0%</span></div>
-            <div class="progress-bar"><div class="progress-fill" id="progress-bgremove-fill"></div></div>
-          </div>
-          <div class="bg-preview-grid" id="bg-previews"></div>
-          <div class="notice warn" id="notice-bg"><strong>Algoritmo local:</strong> Usa flood-fill desde las esquinas. Funciona mejor con fondos uniformes.</div>
-          <div class="action-bar">
-            <button class="btn-convert" id="btn-bgremove" onclick="removeBackgrounds()" disabled>Borrar Fondo</button>
-            <button class="btn-clear" onclick="clearFiles('bgremove'); document.getElementById('bg-previews').innerHTML=''">
-              <span class="btn-clear-label">Limpiar</span>
-            </button>
-            <span class="file-count" id="count-bgremove">0 archivos</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- DESCARGAR POR URL -->
-      <div class="panel" id="panel-urldown">
-        <div class="panel-header">
-          <div>
-            <div class="panel-title">URL <span class="arrow">→</span> ARCHIVO</div>
-            <div class="panel-subtitle">Descargá imágenes o videos directamente desde un link</div>
-          </div>
-          <div class="format-pills">
-            <span class="pill">IMG</span>
-            <span class="pill">VIDEO</span>
-            <span class="pill hi">→ descarga directa</span>
-          </div>
-        </div>
-        <div class="panel-body">
-          <div class="notice">
-            <strong>Cómo usar</strong> — Pegá la URL directa de una imagen o video y hacé clic en Cargar. Algunos sitios bloquean descargas externas por política CORS.
-          </div>
-          <div class="url-input-wrap">
-            <input
-              class="url-input"
-              type="url"
-              id="url-input"
-              placeholder="https://ejemplo.com/imagen.jpg"
-              oninput="urlInputChanged()"
-              onkeydown="if(event.key==='Enter') fetchUrl()"
-            />
-            <button class="url-fetch-btn" id="url-fetch-btn" onclick="fetchUrl()">Cargar →</button>
-          </div>
-          <div class="url-cors-notice" id="url-cors-notice">
-            <strong>⚠ Bloqueado por CORS</strong> — El servidor no permite descargas desde el navegador.
-          </div>
-          <div class="url-preview-box" id="url-preview-box">
-            <div class="url-meta" id="url-meta"></div>
-            <div id="url-media-wrap"></div>
-            <div class="url-dl-bar">
-              <button class="url-dl-btn" id="url-dl-btn" onclick="downloadFromUrl()">↓ Descargar</button>
-              <span id="url-dl-status" style="font-family:var(--mono);font-size:0.62rem;color:var(--muted);"></span>
-            </div>
-          </div>
-          <div class="url-history" id="url-history" style="display:none;">
-            <div class="url-history-title">Recientes</div>
-            <div id="url-history-list"></div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div><!-- /page-converter -->
-
-  <!-- SETTINGS -->
-  <div class="app-page" id="page-settings">
-    <div class="settings-title" id="settings-title">Configuración</div>
-    <p class="settings-sub" id="settings-sub">Personalizá el comportamiento de CONVRT</p>
-    <div class="settings-group">
-      <div class="settings-group-title" id="settings-grp-quality">Calidad de exportación</div>
-      <div class="setting-row">
-        <div class="setting-info">
-          <div class="setting-name" id="setting-jpg-name">Calidad JPG / WEBP</div>
-          <div class="setting-desc" id="setting-jpg-desc">Nivel de compresión para imágenes JPG y WEBP (1–100)</div>
-        </div>
-        <div class="setting-control quality-slider">
-          <input type="range" min="50" max="100" value="92" id="cfg-quality"
-            oninput="document.getElementById('cfg-quality-val').textContent=this.value+'%'"/>
-          <span class="quality-val" id="cfg-quality-val">92%</span>
-        </div>
-      </div>
-      <div class="setting-row">
-        <div class="setting-info">
-          <div class="setting-name" id="setting-pdfscale-name">Escala PDF</div>
-          <div class="setting-desc" id="setting-pdfscale-desc">Factor de resolución al convertir páginas PDF a imagen</div>
-        </div>
-        <div class="setting-control">
-          <select class="setting-select" id="cfg-pdfscale">
-            <option value="1" id="setting-pdfscale-1">1x — Rápido</option>
-            <option value="2" selected id="setting-pdfscale-2">2x — Balanceado</option>
-            <option value="3" id="setting-pdfscale-3">3x — Alta calidad</option>
-          </select>
-        </div>
-      </div>
-    </div>
-    <div class="settings-group">
-      <div class="settings-group-title" id="settings-grp-ui">Interfaz</div>
-      <div class="setting-row">
-        <div class="setting-info">
-          <div class="setting-name" id="setting-toasts-name">Notificaciones</div>
-          <div class="setting-desc" id="setting-toasts-desc">Mostrar toast al completar cada conversión</div>
-        </div>
-        <div class="setting-control">
-          <label class="toggle">
-            <input type="checkbox" checked id="cfg-toasts"/>
-            <div class="toggle-track"></div>
-            <div class="toggle-thumb"></div>
-          </label>
-        </div>
-      </div>
-      <div class="setting-row">
-        <div class="setting-info">
-          <div class="setting-name" id="setting-autodl-name">Descarga automática</div>
-          <div class="setting-desc" id="setting-autodl-desc">Descargar archivos automáticamente al finalizar</div>
-        </div>
-        <div class="setting-control">
-          <label class="toggle">
-            <input type="checkbox" checked id="cfg-autoDl"/>
-            <div class="toggle-track"></div>
-            <div class="toggle-thumb"></div>
-          </label>
-        </div>
-      </div>
-      <div class="setting-row">
-        <div class="setting-info">
-          <div class="setting-name" id="setting-lang-name">Idioma</div>
-          <div class="setting-desc" id="setting-lang-desc">Idioma de la interfaz</div>
-        </div>
-        <div class="setting-control">
-          <select class="setting-select" id="cfg-lang">
-            <option value="es">Español</option>
-            <option value="en">English</option>
-          </select>
-        </div>
-      </div>
-    </div>
-    <div class="settings-group">
-      <div class="settings-group-title" id="settings-grp-gif">GIF</div>
-      <div class="setting-row">
-        <div class="setting-info">
-          <div class="setting-name" id="setting-gif-fps-name">FPS por defecto</div>
-          <div class="setting-desc" id="setting-gif-fps-desc">Frames por segundo al generar GIFs</div>
-        </div>
-        <div class="setting-control">
-          <select class="setting-select" id="cfg-gifFps">
-            <option value="5">5 FPS</option>
-            <option value="10" selected>10 FPS</option>
-            <option value="15">15 FPS</option>
-            <option value="24">24 FPS</option>
-          </select>
-        </div>
-      </div>
-    </div>
+    <button class="install-banner-btn" id="install-btn" data-i18n="installBtn">Instalar</button>
+    <button class="install-banner-close" id="install-dismiss" aria-label="Descartar">×</button>
   </div>
+</div>
 
-  <!-- FAQ -->
-  <div class="app-page" id="page-faq">
-    <div class="faq-title" id="faq-title">Ayuda & FAQ</div>
-    <p class="faq-sub" id="faq-sub">Preguntas frecuentes sobre el uso de CONVRT</p>
-    <div id="faq-container"></div>
+<!-- ═══════════════ MOBILE DOCK ═══════════════ -->
+<nav class="mobile-dock" id="mobile-dock" aria-label="Herramientas">
+  <div class="mobile-dock-list" role="tablist">
+    <button class="mobile-dock-item active" data-panel="img" data-color="hot" role="tab" aria-selected="true">
+      <span class="dock-icon" data-icon="img" aria-hidden="true"></span>
+      <span class="dock-label">Imágenes</span>
+    </button>
+    <button class="mobile-dock-item" data-panel="pdf2img" data-color="cold" role="tab" aria-selected="false">
+      <span class="dock-icon" data-icon="pdf2img" aria-hidden="true"></span>
+      <span class="dock-label">PDF→Img</span>
+    </button>
+    <button class="mobile-dock-item" data-panel="word2pdf" data-color="ok" role="tab" aria-selected="false">
+      <span class="dock-icon" data-icon="word2pdf" aria-hidden="true"></span>
+      <span class="dock-label">Word→PDF</span>
+    </button>
+    <button class="mobile-dock-item" data-panel="vid2gif" data-color="warn" role="tab" aria-selected="false">
+      <span class="dock-icon" data-icon="vid2gif" aria-hidden="true"></span>
+      <span class="dock-label">Video→GIF</span>
+    </button>
+    <button class="mobile-dock-item" data-panel="bgremove" data-color="purple" role="tab" aria-selected="false">
+      <span class="dock-icon" data-icon="bgremove" aria-hidden="true"></span>
+      <span class="dock-label">Fondo</span>
+    </button>
+    <button class="mobile-dock-item" data-panel="urldown" data-color="pink" role="tab" aria-selected="false">
+      <span class="dock-icon" data-icon="urldown" aria-hidden="true"></span>
+      <span class="dock-label">URL</span>
+    </button>
   </div>
+</nav>
 
-</div><!-- /screen-app -->
-
-<div class="toast" id="toast"></div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
-<script src="script.js"></script>
+<script type="module" src="js/main.js"></script>
 </body>
 </html>
